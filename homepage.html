@@ -211,7 +211,7 @@
         
         .contact-input:focus {
             background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary-dark);
+            border-color: var(--primary);
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
         }
         
@@ -1151,8 +1151,7 @@
         document.querySelectorAll('.fade-in').forEach(el => {
             observer.observe(el);
         });
-
-        // Scroll to top button
+        
         const scrollToTopBtn = document.createElement('button');
         scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
         scrollToTopBtn.className = 'fixed bottom-8 right-8 w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 opacity-0 invisible transform translate-y-4 z-50';
@@ -1175,14 +1174,13 @@
                 scrollToTopBtn.classList.add('opacity-0', 'invisible', 'translate-y-4');
             }
         });
-
-        // Initialize on page load
+        
         document.addEventListener('DOMContentLoaded', function() {
             // Set default language to English
             setLanguage('en');
 
             // Apply saved theme
-            const savedTheme = localStorage.getItem('saieesoft-theme') || 'light';
+            const savedTheme = localStorage.getItem('saieesoft-theme') || 'dark';
             applyTheme(savedTheme);
             
             // Add fade-in animation to elements
