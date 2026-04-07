@@ -1,982 +1,658 @@
-import customtkinter as ctk
-import subprocess, ctypes, sys, threading, webbrowser, os, configparser, uuid, time, shutil, hashlib
-from tkinter import messagebox
-# ══════════════════════════════════════════════════════════════════════════════
-#  THEME — Modern Dark Blue Dashboard
-# ══════════════════════════════════════════════════════════════════════════════
-BG_ROOT     = "#0f1117"
-BG_SIDEBAR  = "#13161f"
-BG_TOPBAR   = "#13161f"
-BG_CONTENT  = "#0f1117"
-BG_CARD     = "#181d2a"
-BG_CARD_H   = "#1e2438"
-BD_CARD     = "#232a3d"
-AC_BLUE     = "#2d9cdb"
-AC_BLUE_H   = "#1a7ab5"
-AC_BLUE_DIM = "#0d2035"
-C_ON        = "#27ae60"
-C_ON_H      = "#1a6e3c"
-C_OFF       = "#e74c3c"
-C_OFF_H     = "#8b1a1a"
-TX_1        = "#e8eaf0"
-TX_2        = "#6b7899"
-TX_3        = "#2e3550"
-# Tab accent colors
-TAB_ACCENT = {
-    "sys":  "#2d9cdb",
-    "net":  "#00d4aa",
-    "cln":  "#27ae60",
-    "game": "#f39c12",
-    "hw":   "#9b59b6",
-    "priv": "#e67e22",
-    "care": "#e74c3c",
-    "apps": "#3498db",
-    "cred": "#7f8c8d",
-}
-TAB_DEFS = [
-    ("sys",  "SYS",  ""),
-    ("net",  "NET",  ""),
-    ("cln",  "CLN",  ""),
-    ("game", "GAME", ""),
-    ("hw",   "HW",   ""),
-    ("priv", "PRIV", ""),
-    ("care", "CARE", ""),
-    ("apps", "APPS", ""),
-    ("cred", "INFO", ""),
-]
-# Nav labels (no icons)
-TAB_ICONS = {
-    "sys":  ("", "Optimizer"),
-    "net":  ("", "Network"),
-    "cln":  ("", "Cleaner"),
-    "game": ("", "Gaming"),
-    "hw":   ("", "Hardware"),
-    "priv": ("", "Privacy"),
-    "care": ("", "PC Care"),
-    "apps": ("", "Apps"),
-    "cred": ("", "About"),
-}
-F_LOGO    = ("Segoe UI", 14, "bold")
-F_TABL    = ("Segoe UI", 11, "bold")
-F_CAT_HDR = ("Segoe UI", 16, "bold")
-F_TOOL_N  = ("Segoe UI", 13, "bold")
-F_TOOL_D  = ("Segoe UI", 11)
-F_BTN     = ("Segoe UI", 12, "bold")
-F_NAV     = ("Segoe UI", 12, "bold")
-F_NAV_IC  = ("Segoe UI Emoji", 16)
-F_CRED_K  = ("Segoe UI", 12, "bold")
-F_CRED_V  = ("Segoe UI", 12)
-BTN_H   = 28
-BTN_RAD = 8
-SIDEBAR_W = 200
-# ══════════════════════════════════════════════════════════════════════════════
-#  BACKEND HELPERS
-# ══════════════════════════════════════════════════════════════════════════════
-def is_admin() -> bool:
-    try:
-        return bool(ctypes.windll.shell32.IsUserAnAdmin())
-    except Exception:
-        return False
-def get_app_data_dir() -> str:
-    d = os.path.join(os.getenv("APPDATA", ""), "SwiftService")
-    os.makedirs(d, exist_ok=True)
-    return d
-def _find_powershell() -> str:
-    found = shutil.which("powershell")
-    if found:
-        return found
-    for p in [
-        r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe",
-        r"C:\Windows\SysWOW64\WindowsPowerShell\v1.0\powershell.exe",
-    ]:
-        if os.path.isfile(p):
-            return p
-    return "powershell"
-_PS = _find_powershell()
-def _report_error(title: str, msg: str) -> None:
-    try:
-        import tkinter as tk
-        r = tk._default_root
-        if r:
-            r.after(0, lambda: messagebox.showerror(title, msg))
-    except Exception:
-        pass
-def _flash(btn, col: str, ms: int = 200) -> None:
-    try:
-        orig = btn.cget("fg_color")
-        btn.configure(fg_color=col)
-        btn.after(ms, lambda: btn.configure(fg_color=orig))
-    except Exception:
-        pass
-def _tmpdir() -> str:
-    return os.environ.get("TEMP") or "C:\\"
-def _make_bat(content: str) -> str:
-    p = os.path.join(_tmpdir(), f"ss_{uuid.uuid4().hex}.bat")
-    with open(p, "w", encoding="ansi") as f:
-        f.write(content)
-    return p
-def _make_ps1(script: str) -> str:
-    p = os.path.join(_tmpdir(), f"ss_{uuid.uuid4().hex}.ps1")
-    footer = "\nWrite-Host ''\nWrite-Host 'Done. Press Enter...' -ForegroundColor Green\nRead-Host\n"
-    with open(p, "w", encoding="utf-8-sig") as f:
-        f.write(script + footer)
-    return p
-def _cleanup(path: str) -> None:
-    try:
-        os.remove(path)
-    except Exception:
-        pass
-def _run_in_thread(fn):
-    def wrapper(*args, **kwargs):
-        threading.Thread(target=fn, args=args, kwargs=kwargs, daemon=True).start()
-    return wrapper
-@_run_in_thread
-def run_cmd_visible(cmd: str) -> None:
-    bp = None
-    try:
-        bp = _make_bat(f"@echo off\ntitle SwiftService\n{cmd}\npause\n")
-        subprocess.run(["cmd", "/c", bp], creationflags=subprocess.CREATE_NEW_CONSOLE)
-    except Exception as e:
-        _report_error("SwiftService", str(e))
-    finally:
-        if bp:
-            _cleanup(bp)
-@_run_in_thread
-def run_ps_visible(script: str) -> None:
-    pp = None
-    try:
-        pp = _make_ps1(script)
-        subprocess.run(
-            [_PS, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", pp],
-            creationflags=subprocess.CREATE_NEW_CONSOLE,
-        )
-    except FileNotFoundError:
-        _report_error("SwiftService", f"PowerShell not found.\nTried: {_PS}")
-    except Exception as e:
-        _report_error("SwiftService", str(e))
-    finally:
-        if pp:
-            _cleanup(pp)
-@_run_in_thread
-def run_cmd_hidden(cmd: str) -> None:
-    bp = None
-    try:
-        bp = _make_bat(f"@echo off\n{cmd}\n")
-        subprocess.run([bp], creationflags=0x08000000)
-    except Exception as e:
-        _report_error("SwiftService", str(e))
-    finally:
-        if bp:
-            _cleanup(bp)
-@_run_in_thread
-def run_battery_report() -> None:
-    bp = None
-    try:
-        rp = os.path.join(_tmpdir(), f"bat_{uuid.uuid4().hex}.html")
-        bp = _make_bat(f'powercfg /batteryreport /output "{rp}"\n')
-        subprocess.run([bp], creationflags=0x08000000)
-        time.sleep(2)
-        if os.path.exists(rp):
-            webbrowser.open(f"file:///{rp}")
-        else:
-            _report_error("SwiftService", "Battery report not created.")
-    except Exception as e:
-        _report_error("SwiftService", str(e))
-    finally:
-        if bp:
-            _cleanup(bp)
-# ══════════════════════════════════════════════════════════════════════════════
-#  STRINGS
-# ══════════════════════════════════════════════════════════════════════════════
-TEXTS = {
-    "EN": dict(
-        title="SwiftService", sub="v2.1",
-        lang="RU",
-        tabs={
-            "sys": "Optimizer", "net": "Network", "cln": "Cleaner",
-            "game": "Gaming", "hw": "Hardware", "priv": "Privacy",
-            "care": "PC Care", "apps": "Apps", "cred": "About",
-        },
-        on="Enable", off="Disable", run="Run", refresh="Refresh",
-        install="Install", open_folder="Open Folder",
-        apps_empty="No installers found.\nDrop .exe / .msi / .msix into the files folder.",
-        search="Search apps…", del_confirm="Remove {name} from files folder?",
-        tools={
-            "sfc":            ("SFC Scan",         "Scan and repair corrupted system files"),
-            "dism_fix":       ("DISM Restore",     "Deep repair of the system image via Windows Update"),
-            "chkdsk":         ("Check Disk",       "Scan drive C: for errors — requires reboot"),
-            "win_upd":        ("Windows Update",   "Start or stop the Windows Update service"),
-            "net_reset":      ("Network Reset",    "Flush DNS, reset Winsock and TCP/IP stack"),
-            "net_fw":         ("Reset Firewall",   "Restore Windows Firewall to factory defaults"),
-            "net_dns":        ("Cloudflare DNS",   "Point all adapters to 1.1.1.1 / 1.0.0.1"),
-            "cln_temp":       ("Deep Cleanup",     "Wipe Temp, Prefetch and system log folders"),
-            "cln_drivers":    ("Old Drivers",      "Find orphaned driver packages — prompts before delete"),
-            "cln_disk":       ("Disk Cleanup",     "Open the built-in Windows Disk Cleanup wizard"),
-            "game_mode":      ("Game Mode",        "Toggle Windows Game Mode on or off"),
-            "mouse_accel":    ("Mouse Accel",      "Kill pointer acceleration for true 1:1 input"),
-            "gpu_pref":       ("GPU Scheduling",   "Enable Hardware-Accelerated GPU Scheduling"),
-            "hw_info":        ("Hardware Info",    "Report CPU name, core count, RAM and GPU"),
-            "hw_temp":        ("Battery Report",   "Generate a full battery health HTML report"),
-            "pwr_high":       ("Max Power",        "Unlock the hidden Ultimate Performance plan"),
-            "priv_telemetry": ("Telemetry",        "Toggle Microsoft diagnostic data collection"),
-            "priv_adv":       ("Advertising ID",   "Enable or disable personalised ad tracking"),
-            "priv_copilot":   ("Copilot",          "Show or hide the Windows Copilot AI button"),
-            "care_wupd":      ("Install Updates",  "Fetch and install all pending Windows updates"),
-            "care_drivers":   ("Update Drivers",   "Download driver updates via Windows Update"),
-            "care_ram":       ("Free RAM",         "Trim working sets and flush the standby list"),
-            "care_diag":      ("Diagnostics",      "Full system snapshot + error log last 24 h"),
-            "care_smart":     ("Disk Health",      "Check SMART status and physical disk info"),
-            "care_startup":   ("Startup Apps",     "List autorun entries and open Task Manager"),
-        },
-        cred=dict(
-            version="2.1", author="SaieeSoft",
-            site="https://saieesoft.github.io/",
-            contact="saieesoft@duck.com",
-            note="Check the website for updates!",
-        ),
-    ),
-    "RU": dict(
-        title="SwiftService", sub="v2.1",
-        lang="EN",
-        tabs={
-            "sys": "Оптимизатор", "net": "Сеть", "cln": "Очистка",
-            "game": "Игры", "hw": "Железо", "priv": "Приватность",
-            "care": "Уход", "apps": "Приложения", "cred": "О программе",
-        },
-        on="Вкл", off="Выкл", run="Запуск", refresh="Обновить",
-        install="Установить", open_folder="Открыть папку",
-        apps_empty="Установщики не найдены.\nПоместите .exe / .msi / .msix в папку files.",
-        search="Поиск…", del_confirm="Удалить {name} из папки files?",
-        tools={
-            "sfc":            ("SFC Сканирование",   "Найти и исправить повреждённые файлы системы"),
-            "dism_fix":       ("DISM Восстановление","Глубокий ремонт образа через Windows Update"),
-            "chkdsk":         ("Проверка диска",     "Проверить диск C: на ошибки — нужен перезапуск"),
-            "win_upd":        ("Обновления Windows", "Запустить или остановить службу обновлений"),
-            "net_reset":      ("Сброс сети",         "Сброс DNS, Winsock и стека TCP/IP"),
-            "net_fw":         ("Сброс брандмауэра",  "Восстановить брандмауэр до заводских настроек"),
-            "net_dns":        ("DNS Cloudflare",     "Установить 1.1.1.1 / 1.0.0.1 на всех адаптерах"),
-            "cln_temp":       ("Глубокая очистка",   "Очистить Temp, Prefetch и папки логов"),
-            "cln_drivers":    ("Старые драйверы",    "Найти ненужные пакеты — спросит перед удалением"),
-            "cln_disk":       ("Очистка диска",      "Открыть стандартную утилиту очистки диска"),
-            "game_mode":      ("Игровой режим",      "Включить или отключить Game Mode Windows"),
-            "mouse_accel":    ("Ускорение мыши",     "Отключить акселерацию — чистый 1:1 ввод"),
-            "gpu_pref":       ("Планировщик GPU",    "Включить аппаратное планирование GPU"),
-            "hw_info":        ("Инфо о железе",      "CPU, количество ядер, ОЗУ и видеокарта"),
-            "hw_temp":        ("Отчёт батареи",      "HTML-отчёт о состоянии аккумулятора"),
-            "pwr_high":       ("Макс. питание",      "Разблокировать скрытый план максимальной мощности"),
-            "priv_telemetry": ("Телеметрия",         "Включить или отключить сбор данных Microsoft"),
-            "priv_adv":       ("Рекламный ID",       "Управлять персонализированной рекламой"),
-            "priv_copilot":   ("Copilot",            "Показать или скрыть кнопку Copilot"),
-            "care_wupd":      ("Установить обновл.", "Найти и установить все обновления Windows"),
-            "care_drivers":   ("Обновить драйверы",  "Загрузить обновления драйверов через WU"),
-            "care_ram":       ("Очистить RAM",       "Обрезать рабочие наборы, сбросить standby"),
-            "care_diag":      ("Диагностика",        "Снимок системы + лог ошибок за 24 ч"),
-            "care_smart":     ("Здоровье диска",     "Проверить SMART и физическое состояние"),
-            "care_startup":   ("Автозагрузка",       "Список автозапуска и Диспетчер задач"),
-        },
-        cred=dict(
-            version="2.1", author="SaieeSoft",
-            site="https://saieesoft.github.io/",
-            contact="saieesoft@duck.com",
-            note="Следите за обновлениями на сайте!",
-        ),
-    ),
-}
-# ══════════════════════════════════════════════════════════════════════════════
-#  POWERSHELL & CMD
-# ══════════════════════════════════════════════════════════════════════════════
-PS = {
-    "net_dns": (
-        "Get-NetAdapter -Physical | Where-Object {$_.Status -eq 'Up'} | "
-        "Set-DnsClientServerAddress -ServerAddresses '1.1.1.1','1.0.0.1'\n"
-        "Write-Host 'DNS → Cloudflare 1.1.1.1' -ForegroundColor Cyan"
-    ),
-    "cln_drivers": (
-        "Write-Host '=== Safe Driver Cleanup ===' -ForegroundColor Cyan\n"
-        "$storeOut=pnputil /enum-drivers\n"
-        "$storeInfs=[regex]::Matches($storeOut,'(?i)oem\\d+\\.inf')|Select-Object -ExpandProperty Value -Unique\n"
-        "$devOut=pnputil /enum-devices /drivers\n"
-        "$activeInfs=[regex]::Matches($devOut,'(?i)oem\\d+\\.inf')|Select-Object -ExpandProperty Value -Unique\n"
-        "$cands=$storeInfs|Where-Object{$activeInfs -notcontains $_}\n"
-        "if($cands.Count-eq 0){Write-Host 'Nothing to clean.' -ForegroundColor Green}\n"
-        "else{\n"
-        "    Write-Host \"Found $($cands.Count) unused package(s):\" -ForegroundColor Yellow\n"
-        "    $cands|ForEach-Object{Write-Host \"  $_\"}\n"
-        "    $a=Read-Host 'Delete? (y/N)'\n"
-        "    if($a-match'^[Yy]'){\n"
-        "        $n=0;foreach($inf in $cands){\n"
-        "            $r=pnputil /delete-driver $inf 2>&1\n"
-        "            if($r-match'successfully'){Write-Host \"Removed $inf\" -ForegroundColor Green;$n++}\n"
-        "            else{Write-Host \"Skip $inf\" -ForegroundColor Red}}\n"
-        "        Write-Host \"Done — removed $n.\" -ForegroundColor Cyan}\n"
-        "    else{Write-Host 'Cancelled.' -ForegroundColor DarkGray}}\n"
-    ),
-    "game_mode_on": (
-        "$p='HKCU:\\Software\\Microsoft\\GameBar'\n"
-        "if(-not(Test-Path $p)){New-Item -Path $p -Force|Out-Null}\n"
-        "Set-ItemProperty -Path $p -Name 'AllowAutoGameMode' -Value 1 -Type DWord\n"
-        "Set-ItemProperty -Path $p -Name 'AutoGameModeEnabled' -Value 1 -Type DWord\n"
-        "Write-Host 'Game Mode ON' -ForegroundColor Green"
-    ),
-    "game_mode_off": (
-        "$p='HKCU:\\Software\\Microsoft\\GameBar'\n"
-        "if(-not(Test-Path $p)){New-Item -Path $p -Force|Out-Null}\n"
-        "Set-ItemProperty -Path $p -Name 'AllowAutoGameMode' -Value 0 -Type DWord\n"
-        "Set-ItemProperty -Path $p -Name 'AutoGameModeEnabled' -Value 0 -Type DWord\n"
-        "Write-Host 'Game Mode OFF' -ForegroundColor Red"
-    ),
-    "mouse_accel": (
-        "$path='HKCU:\\Control Panel\\Mouse'\n"
-        "Set-ItemProperty -Path $path -Name 'MouseSpeed' -Value '0'\n"
-        "Set-ItemProperty -Path $path -Name 'MouseThreshold1' -Value '0'\n"
-        "Set-ItemProperty -Path $path -Name 'MouseThreshold2' -Value '0'\n"
-        "Add-Type @'\nusing System;using System.Runtime.InteropServices;\n"
-        "public class SpiMouse{[DllImport(\"user32.dll\",SetLastError=true)]\n"
-        "public static extern bool SystemParametersInfo(uint a,uint b,int[] c,uint d);}\n'@\n"
-        "[SpiMouse]::SystemParametersInfo(0x0004,0,[int[]](0,0,0),0x0003)|Out-Null\n"
-        "Write-Host 'Mouse acceleration disabled.' -ForegroundColor Cyan"
-    ),
-    "gpu_pref": (
-        "Set-ItemProperty -Path 'HKLM:\\SYSTEM\\CurrentControlSet\\Control\\GraphicsDrivers' "
-        "-Name 'HwSchMode' -Value 2 -Type DWord\n"
-        "Write-Host 'HW GPU Scheduling enabled — reboot required.' -ForegroundColor Green"
-    ),
-    "hw_info": (
-        "Write-Host '=== CPU ===' -ForegroundColor Cyan\n"
-        "Get-CimInstance Win32_Processor|Select-Object Name,NumberOfCores,MaxClockSpeed|Format-List\n"
-        "Write-Host '=== RAM ===' -ForegroundColor Cyan\n"
-        "$r=(Get-CimInstance Win32_PhysicalMemory|Measure-Object Capacity -Sum).Sum\n"
-        "Write-Host ('Total: {0} GB' -f [math]::Round($r/1GB,2))\n"
-        "Write-Host '=== GPU ===' -ForegroundColor Cyan\n"
-        "Get-CimInstance Win32_VideoController|Select-Object Name,"
-        "@{N='VRAM MB';E={[math]::Round($_.AdapterRAM/1MB,0)}}|Format-List"
-    ),
-    "care_wupd": (
-        "if(-not(Get-Module -ListAvailable -Name PSWindowsUpdate)){\n"
-        "    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser|Out-Null\n"
-        "    Install-Module PSWindowsUpdate -Force -Scope CurrentUser -AllowClobber|Out-Null}\n"
-        "Import-Module PSWindowsUpdate\n"
-        "$u=Get-WindowsUpdate\n"
-        "if($u.Count-eq 0){Write-Host 'Up to date!' -ForegroundColor Green}\n"
-        "else{Write-Host \"$($u.Count) update(s):\" -ForegroundColor Yellow\n"
-        "    $u|Select-Object KB,Title|Format-Table -AutoSize\n"
-        "    if((Read-Host 'Install all? (y/N)')-match'^[Yy]'){Install-WindowsUpdate -AcceptAll -AutoReboot}\n"
-        "    else{Write-Host 'Cancelled.'}}"
-    ),
-    "care_drivers": (
-        "if(-not(Get-Module -ListAvailable -Name PSWindowsUpdate)){\n"
-        "    Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force -Scope CurrentUser|Out-Null\n"
-        "    Install-Module PSWindowsUpdate -Force -Scope CurrentUser -AllowClobber|Out-Null}\n"
-        "Import-Module PSWindowsUpdate\n"
-        "$d=Get-WindowsUpdate -UpdateType Driver\n"
-        "if($d.Count-eq 0){Write-Host 'Drivers up to date.' -ForegroundColor Green}\n"
-        "else{Write-Host \"$($d.Count) driver(s):\" -ForegroundColor Yellow\n"
-        "    $d|Select-Object KB,Title|Format-Table -AutoSize\n"
-        "    if((Read-Host 'Install? (y/N)')-match'^[Yy]'){Install-WindowsUpdate -UpdateType Driver -AcceptAll -AutoReboot}\n"
-        "    else{Write-Host 'Cancelled.'}}"
-    ),
-    "care_ram": (
-        "$b=[math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB,1)\n"
-        "Write-Host \"Free before: $b GB\" -ForegroundColor Yellow\n"
-        "Add-Type @'\nusing System;using System.Runtime.InteropServices;\n"
-        "public class WS{[DllImport(\"psapi.dll\")]public static extern bool EmptyWorkingSet(IntPtr h);}\n'@\n"
-        "$n=0;foreach($p in Get-Process){try{[WS]::EmptyWorkingSet($p.Handle)|Out-Null;$n++}catch{}}\n"
-        "Add-Type @'\nusing System;using System.Runtime.InteropServices;\n"
-        "public class MM{[DllImport(\"ntdll.dll\")]public static extern uint NtSetSystemInformation(int c,IntPtr i,int l);\n"
-        "public static void CS(){var b=System.Runtime.InteropServices.Marshal.AllocHGlobal(4);\n"
-        "System.Runtime.InteropServices.Marshal.WriteInt32(b,4);NtSetSystemInformation(80,b,4);\n"
-        "System.Runtime.InteropServices.Marshal.FreeHGlobal(b);}}\n'@\n"
-        "[MM]::CS();Start-Sleep 1\n"
-        "$a=[math]::Round((Get-CimInstance Win32_OperatingSystem).FreePhysicalMemory/1MB,1)\n"
-        "Write-Host \"Free after: $a GB  (+$([math]::Round($a-$b,1)) GB, $n processes trimmed)\" -ForegroundColor Green"
-    ),
-    "care_diag": (
-        "Write-Host ('─'*50) -ForegroundColor DarkGray\n"
-        "Write-Host '  SwiftService · Full Diagnostics' -ForegroundColor Cyan\n"
-        "Write-Host ('─'*50) -ForegroundColor DarkGray\n"
-        "$os=Get-CimInstance Win32_OperatingSystem\n"
-        "Write-Host \"OS: $($os.Caption) Build $($os.BuildNumber)\"\n"
-        "$cpu=Get-CimInstance Win32_Processor\n"
-        "Write-Host \"CPU: $($cpu.Name)  Cores:$($cpu.NumberOfCores)  Load:$($cpu.LoadPercentage)%\"\n"
-        "$t=[math]::Round($os.TotalVisibleMemorySize/1MB,1);$f=[math]::Round($os.FreePhysicalMemory/1MB,1)\n"
-        "Write-Host \"RAM: Total $t GB  Free $f GB\"\n"
-        "Get-PSDrive -PSProvider FileSystem|Where-Object{$_.Root-match'^[A-Z]:\\\\'}|ForEach-Object{"
-        "Write-Host \"Disk $($_.Root) $([math]::Round(($_.Used+$_.Free)/1GB,1))GB total, $([math]::Round($_.Free/1GB,1))GB free\"}\n"
-        "Get-CimInstance Win32_VideoController|ForEach-Object{Write-Host \"GPU: $($_.Name)\"}\n"
-        "$e=Get-EventLog -LogName System -EntryType Error -After (Get-Date).AddHours(-24) -EA SilentlyContinue\n"
-        "if($e){Write-Host \"System errors (24h): $($e.Count)\";$e|Select-Object -First 5 TimeGenerated,Source,Message|Format-Table -Wrap}\n"
-        "else{Write-Host 'No system errors in last 24h.' -ForegroundColor Green}\n"
-        "Write-Host ('─'*50) -ForegroundColor DarkGray"
-    ),
-    "care_smart": (
-        "$d=Get-CimInstance -Namespace root/wmi -ClassName MSStorageDriver_FailurePredictStatus -EA SilentlyContinue\n"
-        "if($d){foreach($x in $d){$s=if($x.PredictFailure){'FAILURE PREDICTED'}else{'OK'}\n"
-        "$c=if($x.PredictFailure){'Red'}else{'Green'}\n"
-        "Write-Host \"$($x.InstanceName.Split('_')[0])  [$s]\" -ForegroundColor $c}}\n"
-        "else{Write-Host 'SMART not available via WMI.' -ForegroundColor DarkGray}\n"
-        "Get-PhysicalDisk|Select-Object FriendlyName,MediaType,HealthStatus,@{N='GB';E={[math]::Round($_.Size/1GB,1)}}|Format-Table -AutoSize"
-    ),
-    "care_startup": (
-        "$items=@()\n"
-        "$items+=Get-ItemProperty 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -EA SilentlyContinue|"
-        "Get-Member -MemberType NoteProperty|Where-Object{$_.Name-notmatch'^PS'}|"
-        "ForEach-Object{[PSCustomObject]@{Name=$_.Name;Hive='HKCU'}}\n"
-        "$items+=Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Run' -EA SilentlyContinue|"
-        "Get-Member -MemberType NoteProperty|Where-Object{$_.Name-notmatch'^PS'}|"
-        "ForEach-Object{[PSCustomObject]@{Name=$_.Name;Hive='HKLM'}}\n"
-        "if($items.Count-eq 0){Write-Host 'No startup entries.' -ForegroundColor Green}\n"
-        "else{Write-Host \"$($items.Count) startup entries:\" -ForegroundColor Yellow;$items|Format-Table -AutoSize\n"
-        "Write-Host 'Opening Task Manager…' -ForegroundColor DarkGray;Start-Process taskmgr.exe}"
-    ),
-}
-CMD = {
-    "sfc":              "sfc /scannow",
-    "dism_fix":         "dism /online /cleanup-image /restorehealth",
-    "chkdsk":           "echo y | chkdsk C: /f",
-    "win_upd_on":       "sc config wuauserv start=demand & net start wuauserv",
-    "win_upd_off":      "net stop wuauserv & sc config wuauserv start=disabled",
-    "net_reset":        "ipconfig /flushdns & netsh winsock reset & netsh int ip reset",
-    "net_fw":           "netsh advfirewall reset",
-    "cln_temp":         'del /q /s /f "%temp%\\*" & del /q /s /f "C:\\Windows\\Temp\\*" & del /q /s /f "C:\\Windows\\Prefetch\\*"',
-    "cln_disk":         "cleanmgr.exe",
-    "pwr_high":         "powercfg -duplicatescheme e9a42b02-d5df-448d-aa00-03f14749eb61",
-    "priv_tel_on":      "sc config DiagTrack start=auto & net start DiagTrack",
-    "priv_tel_off":     'reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\DataCollection" /v AllowTelemetry /t REG_DWORD /d 0 /f & sc stop DiagTrack & sc config DiagTrack start=disabled',
-    "priv_adv_on":      'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" /v Enabled /t REG_DWORD /d 1 /f',
-    "priv_adv_off":     'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\AdvertisingInfo" /v Enabled /t REG_DWORD /d 0 /f',
-    "priv_copilot_on":  'reg add "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot" /v TurnOffWindowsCopilot /t REG_DWORD /d 0 /f',
-    "priv_copilot_off": 'reg add "HKCU\\Software\\Policies\\Microsoft\\Windows\\WindowsCopilot" /v TurnOffWindowsCopilot /t REG_DWORD /d 1 /f',
-}
-# ══════════════════════════════════════════════════════════════════════════════
-#  APP
-# ══════════════════════════════════════════════════════════════════════════════
-class App(ctk.CTk):
-    _icon_cache: dict = {}
-    def __init__(self):
-        super().__init__()
-        self.title("SwiftService")
-        self.geometry("1060x700")
-        self.minsize(900, 600)
-        ctk.set_appearance_mode("dark")
-        self.configure(fg_color=BG_ROOT)
-        self._config      = configparser.ConfigParser()
-        self._app_dir     = get_app_data_dir()
-        self._config_file = os.path.join(self._app_dir, "settings.ini")
-        self._load_settings()
-        self._setup_ui()
-    # ── persistence ───────────────────────────────────────────────────────────
-    def _load_settings(self) -> None:
-        try:
-            if os.path.exists(self._config_file):
-                self._config.read(self._config_file)
-                self.lang = self._config.get("Settings", "Language", fallback="EN")
-            else:
-                self.lang = "EN"
-                self._save_settings()
-        except Exception:
-            self.lang = "EN"
-    def _save_settings(self) -> None:
-        try:
-            if not self._config.has_section("Settings"):
-                self._config.add_section("Settings")
-            self._config.set("Settings", "Language", self.lang)
-            with open(self._config_file, "w") as f:
-                self._config.write(f)
-        except Exception:
-            pass
-    def _toggle_lang(self) -> None:
-        self.lang = "RU" if self.lang == "EN" else "EN"
-        self._save_settings()
-        self._setup_ui()
-    # ══════════════════════════════════════════════════════════════════════════
-    #  UI SETUP — Dashboard layout with sidebar
-    # ══════════════════════════════════════════════════════════════════════════
-    def _setup_ui(self) -> None:
-        for w in self.winfo_children():
-            w.destroy()
-        t = TEXTS[self.lang]
-        # ── MAIN LAYOUT ───────────────────────────────────────────────────────
-        main = ctk.CTkFrame(self, fg_color=BG_ROOT, corner_radius=0)
-        main.pack(fill="both", expand=True)
-        main.columnconfigure(1, weight=1)
-        main.rowconfigure(0, weight=1)
-        # ── SIDEBAR ───────────────────────────────────────────────────────────
-        sidebar = ctk.CTkFrame(main, fg_color=BG_SIDEBAR, corner_radius=0,
-                               width=SIDEBAR_W, border_width=0)
-        sidebar.grid(row=0, column=0, sticky="nsew")
-        sidebar.pack_propagate(False)
-        sidebar.grid_propagate(False)
-        # Logo area
-        logo_frame = ctk.CTkFrame(sidebar, fg_color="transparent", height=70)
-        logo_frame.pack(fill="x")
-        logo_frame.pack_propagate(False)
-        # Blue accent line on left of logo
-        ctk.CTkFrame(logo_frame, width=3, fg_color=AC_BLUE, corner_radius=0).pack(
-            side="left", fill="y")
-        logo_inner = ctk.CTkFrame(logo_frame, fg_color="transparent")
-        logo_inner.pack(side="left", fill="both", expand=True, padx=16)
-        title_f = ctk.CTkFrame(logo_inner, fg_color="transparent")
-        title_f.pack(side="left", pady=18)
-        ctk.CTkLabel(title_f, text=t["title"], font=F_LOGO,
-                     text_color=TX_1).pack(anchor="w")
-        ctk.CTkLabel(title_f, text=t["sub"], font=("Segoe UI", 9),
-                     text_color=TX_2).pack(anchor="w")
-        # Divider
-        ctk.CTkFrame(sidebar, height=1, fg_color=BD_CARD, corner_radius=0).pack(fill="x")
-        # Nav items (no emojis)
-        nav_frame = ctk.CTkFrame(sidebar, fg_color="transparent")
-        nav_frame.pack(fill="both", expand=True, pady=8)
-        self._tabs:     dict[str, ctk.CTkScrollableFrame] = {}
-        self._nav_btns: dict[str, ctk.CTkButton]          = {}
-        for key, _short, _icon in TAB_DEFS:
-            _unused_icon, label = TAB_ICONS[key]
-            col = TAB_ACCENT.get(key, AC_BLUE)
-            btn_f = ctk.CTkFrame(nav_frame, fg_color="transparent", height=42)
-            btn_f.pack(fill="x", padx=8, pady=2)
-            btn_f.pack_propagate(False)
-            # Accent indicator (hidden by default)
-            indicator = ctk.CTkFrame(btn_f, width=3, fg_color="transparent",
-                                     corner_radius=0)
-            indicator.pack(side="left", fill="y")
-            btn = ctk.CTkButton(
-                btn_f, text=f"  {label}", font=F_NAV,
-                height=38, corner_radius=8, anchor="w",
-                fg_color="transparent", text_color=TX_2,
-                hover_color=BG_CARD_H,
-                command=lambda k=key: self._select(k),
-            )
-            btn.pack(side="left", fill="both", expand=True)
-            self._nav_btns[key] = (btn, indicator, col)
-        # Bottom: Lang button
-        ctk.CTkFrame(sidebar, height=1, fg_color=BD_CARD, corner_radius=0).pack(fill="x")
-        ctk.CTkButton(
-            sidebar, text=f"  {t['lang']}", font=F_NAV,
-            height=40, corner_radius=0,
-            fg_color="transparent", text_color=TX_2,
-            hover_color=BG_CARD_H, anchor="w",
-            command=self._toggle_lang,
-        ).pack(fill="x", padx=8, pady=8)
-        # ── RIGHT SIDE ────────────────────────────────────────────────────────
-        right = ctk.CTkFrame(main, fg_color=BG_CONTENT, corner_radius=0)
-        right.grid(row=0, column=1, sticky="nsew")
-        right.rowconfigure(1, weight=1)
-        right.columnconfigure(0, weight=1)
-        # Topbar
-        topbar = ctk.CTkFrame(right, fg_color=BG_TOPBAR, corner_radius=0, height=56)
-        topbar.grid(row=0, column=0, sticky="ew")
-        topbar.pack_propagate(False)
-        topbar.grid_propagate(False)
-        self._topbar_title = ctk.CTkLabel(
-            topbar, text="", font=("Segoe UI", 15, "bold"), text_color=TX_1)
-        self._topbar_title.pack(side="left", padx=20)
-        self._topbar_sub = ctk.CTkLabel(
-            topbar, text="", font=("Segoe UI", 11), text_color=TX_2)
-        self._topbar_sub.pack(side="left")
-        # Thin bottom border on topbar
-        ctk.CTkFrame(right, height=1, fg_color=BD_CARD, corner_radius=0).grid(
-            row=0, column=0, sticky="sew")
-        # Content pane
-        self._content = ctk.CTkFrame(right, fg_color=BG_CONTENT, corner_radius=0)
-        self._content.grid(row=1, column=0, sticky="nsew")
-        self._content.rowconfigure(0, weight=1)
-        self._content.columnconfigure(0, weight=1)
-        for key, _, _ in TAB_DEFS:
-            frame = ctk.CTkScrollableFrame(
-                self._content, fg_color=BG_CONTENT,
-                scrollbar_button_color=BD_CARD,
-                scrollbar_button_hover_color=TAB_ACCENT.get(key, AC_BLUE),
-            )
-            self._tabs[key] = frame
-        self._populate_all(t)
-        self._select("sys")
-    # ── tab selection ─────────────────────────────────────────────────────────
-    def _select(self, key: str) -> None:
-        self._cur = key
-        t = TEXTS[self.lang]
-        _unused, label = TAB_ICONS[key]
-        self._topbar_title.configure(text=label)
-        self._topbar_sub.configure(text=f"  —  {t['tabs'][key]}")
-        for k, frame in self._tabs.items():
-            if k == key:
-                frame.grid(row=0, column=0, sticky="nsew", padx=20, pady=12)
-            else:
-                frame.grid_remove()
-        for k, (btn, indicator, col) in self._nav_btns.items():
-            if k == key:
-                btn.configure(fg_color=BG_CARD, text_color=TX_1)
-                indicator.configure(fg_color=col)
-            else:
-                btn.configure(fg_color="transparent", text_color=TX_2)
-                indicator.configure(fg_color="transparent")
-    # ── card widgets ──────────────────────────────────────────────────────────
-    def _heading(self, tab, key: str) -> None:
-        col  = TAB_ACCENT.get(key, AC_BLUE)
-        _unused, name = TAB_ICONS[key]
-        row = ctk.CTkFrame(tab, fg_color="transparent")
-        row.pack(fill="x", pady=(2, 10), padx=2)
-        ctk.CTkLabel(row, text=name, font=F_CAT_HDR, text_color=col).pack(side="left")
-        ctk.CTkFrame(row, height=1, fg_color=BD_CARD, corner_radius=0).pack(
-            side="left", fill="x", expand=True, padx=(10, 0), pady=(1, 0))
-    def _card(self, tab, tab_key: str, name: str, desc: str):
-        col = TAB_ACCENT.get(tab_key, AC_BLUE)
-        outer = ctk.CTkFrame(tab, fg_color=BG_CARD, corner_radius=8,
-                             border_width=1, border_color=BD_CARD, height=72)
-        outer.pack(fill="x", pady=3, padx=2)
-        outer.pack_propagate(False)
-        ctk.CTkFrame(outer, width=3, fg_color=col, corner_radius=0).pack(
-            side="left", fill="y", padx=(10, 12), pady=10)
-        txt = ctk.CTkFrame(outer, fg_color="transparent")
-        txt.pack(side="left", fill="both", expand=True)
-        ctk.CTkLabel(txt, text=name, font=F_TOOL_N, text_color=TX_1,
-                     anchor="sw").pack(fill="x", expand=True, pady=(6, 0))
-        ctk.CTkLabel(txt, text=desc, font=F_TOOL_D, text_color=TX_2,
-                     anchor="nw").pack(fill="x", expand=True, pady=(0, 6))
-        btn_area = ctk.CTkFrame(outer, fg_color="transparent")
-        btn_area.place(relx=1.0, rely=0.5, x=-14, anchor="e")
-        return btn_area, col
-    def _run_btn(self, parent, label: str, col: str, action):
-        b = ctk.CTkButton(
-            parent, text=label, font=F_BTN,
-            height=BTN_H, corner_radius=BTN_RAD, width=90,
-            fg_color=col, hover_color=AC_BLUE_H, text_color="#ffffff",
-        )
-        b.configure(command=lambda: (_flash(b, AC_BLUE_H), action()))
-        b.pack()
-        return b
-    def _dual_btns(self, parent, txt_on: str, txt_off: str, act_on, act_off) -> None:
-        bo = ctk.CTkButton(
-            parent, text=txt_on, font=F_BTN,
-            height=BTN_H, corner_radius=BTN_RAD, width=84,
-            fg_color=C_ON, hover_color=C_ON_H, text_color="#ffffff",
-        )
-        bo.configure(command=lambda: (_flash(bo, C_ON_H), act_on()))
-        bo.pack(pady=(0, 4))
-        bd = ctk.CTkButton(
-            parent, text=txt_off, font=F_BTN,
-            height=BTN_H, corner_radius=BTN_RAD, width=84,
-            fg_color=C_OFF, hover_color=C_OFF_H, text_color="#ffffff",
-        )
-        bd.configure(command=lambda: (_flash(bd, C_OFF_H), act_off()))
-        bd.pack()
-    # ══════════════════════════════════════════════════════════════════════════
-    #  POPULATE TABS
-    # ══════════════════════════════════════════════════════════════════════════
-    def _populate_all(self, t: dict) -> None:
-        tools = t["tools"]
-        def run(tab, key, cmd_key):
-            ba, col = self._card(tab, key, *tools[key])
-            self._run_btn(ba, t["run"], col, lambda: run_cmd_visible(CMD[cmd_key]))
-        def run_ps(tab, key, ps_key):
-            ba, col = self._card(tab, key, *tools[key])
-            self._run_btn(ba, t["run"], col, lambda: run_ps_visible(PS[ps_key]))
-        def run_bg(tab, key, cmd_key):
-            ba, col = self._card(tab, key, *tools[key])
-            self._run_btn(ba, t["run"], col, lambda: run_cmd_hidden(CMD[cmd_key]))
-        def run_bat(tab, key):
-            ba, col = self._card(tab, key, *tools[key])
-            self._run_btn(ba, t["run"], col, run_battery_report)
-        def dual_cmd(tab, key, on_key, off_key):
-            ba, _ = self._card(tab, key, *tools[key])
-            self._dual_btns(ba, t["on"], t["off"],
-                            lambda: run_cmd_visible(CMD[on_key]),
-                            lambda: run_cmd_visible(CMD[off_key]))
-        def dual_ps(tab, key, on_key, off_key):
-            ba, _ = self._card(tab, key, *tools[key])
-            self._dual_btns(ba, t["on"], t["off"],
-                            lambda: run_ps_visible(PS[on_key]),
-                            lambda: run_ps_visible(PS[off_key]))
-        # System
-        tab = self._tabs["sys"]
-        self._heading(tab, "sys")
-        run(tab, "sfc",      "sfc")
-        run(tab, "dism_fix", "dism_fix")
-        run(tab, "chkdsk",   "chkdsk")
-        dual_cmd(tab, "win_upd", "win_upd_on", "win_upd_off")
-        # Network
-        tab = self._tabs["net"]
-        self._heading(tab, "net")
-        run(tab,    "net_reset", "net_reset")
-        run(tab,    "net_fw",    "net_fw")
-        run_ps(tab, "net_dns",   "net_dns")
-        # Cleanup
-        tab = self._tabs["cln"]
-        self._heading(tab, "cln")
-        run(tab,    "cln_temp",    "cln_temp")
-        run_ps(tab, "cln_drivers", "cln_drivers")
-        run(tab,    "cln_disk",    "cln_disk")
-        # Gaming
-        tab = self._tabs["game"]
-        self._heading(tab, "game")
-        dual_ps(tab, "game_mode",   "game_mode_on", "game_mode_off")
-        run_ps(tab,  "mouse_accel", "mouse_accel")
-        run_ps(tab,  "gpu_pref",    "gpu_pref")
-        # Hardware
-        tab = self._tabs["hw"]
-        self._heading(tab, "hw")
-        run_ps(tab, "hw_info",  "hw_info")
-        run_bat(tab, "hw_temp")
-        run_bg(tab,  "pwr_high", "pwr_high")
-        # Privacy
-        tab = self._tabs["priv"]
-        self._heading(tab, "priv")
-        dual_cmd(tab, "priv_telemetry", "priv_tel_on",     "priv_tel_off")
-        dual_cmd(tab, "priv_adv",       "priv_adv_on",     "priv_adv_off")
-        dual_cmd(tab, "priv_copilot",   "priv_copilot_on", "priv_copilot_off")
-        # PC Care
-        tab = self._tabs["care"]
-        self._heading(tab, "care")
-        run_ps(tab, "care_wupd",    "care_wupd")
-        run_ps(tab, "care_drivers", "care_drivers")
-        run_ps(tab, "care_ram",     "care_ram")
-        run_ps(tab, "care_diag",    "care_diag")
-        run_ps(tab, "care_smart",   "care_smart")
-        run_ps(tab, "care_startup", "care_startup")
-        # Apps & Credits
-        self._build_apps(self._tabs["apps"], t)
-        self._build_credits(self._tabs["cred"], t)
-    # ══════════════════════════════════════════════════════════════════════════
-    #  CREDITS
-    # ══════════════════════════════════════════════════════════════════════════
-    def _build_credits(self, tab, t: dict) -> None:
-        self._heading(tab, "cred")
-        cred = t["cred"]
-        col  = TAB_ACCENT["cred"]
-        # Hero card
-        hero = ctk.CTkFrame(tab, fg_color=BG_CARD, corner_radius=10,
-                            border_width=1, border_color=BD_CARD)
-        hero.pack(fill="x", pady=(0, 10), padx=2)
-        ctk.CTkFrame(hero, height=2, fg_color=AC_BLUE, corner_radius=0).pack(fill="x")
-        hi = ctk.CTkFrame(hero, fg_color="transparent")
-        hi.pack(fill="x", padx=20, pady=16)
-        tx = ctk.CTkFrame(hi, fg_color="transparent")
-        tx.pack(side="left")
-        ctk.CTkLabel(tx, text="SwiftService Tool",
-                     font=("Segoe UI", 15, "bold"), text_color=TX_1).pack(anchor="w")
-        ctk.CTkLabel(tx, text="Windows System Optimization Suite",
-                     font=("Segoe UI", 10), text_color=TX_2).pack(anchor="w")
-        # Info rows
-        info = ctk.CTkFrame(tab, fg_color=BG_CARD, corner_radius=10,
-                            border_width=1, border_color=BD_CARD)
-        info.pack(fill="x", padx=2)
-        info_i = ctk.CTkFrame(info, fg_color="transparent")
-        info_i.pack(fill="x", padx=20, pady=14)
-        labels = {
-            "EN": ["Version", "Author", "Website", "Contact", "Updates"],
-            "RU": ["Версия",  "Автор",  "Сайт",    "Контакт", "Обновления"],
-        }[self.lang]
-        for k, v in zip(labels, [cred["version"], cred["author"],
-                                  cred["site"], cred["contact"], cred["note"]]):
-            r = ctk.CTkFrame(info_i, fg_color="transparent")
-            r.pack(fill="x", pady=4)
-            ctk.CTkLabel(r, text=k, font=F_CRED_K, text_color=col,
-                         width=80, anchor="w").pack(side="left")
-            ctk.CTkLabel(r, text=v, font=F_CRED_V,
-                         text_color=TX_1).pack(side="left", padx=(8, 0))
-    # ══════════════════════════════════════════════════════════════════════════
-    #  APPS TAB
-    # ══════════════════════════════════════════════════════════════════════════
-    def _files_dir(self) -> str:
-        base = os.path.dirname(
-            sys.executable if getattr(sys, "frozen", False)
-            else os.path.abspath(sys.argv[0])
-        )
-        # Return path only — folder is created lazily via _open_folder,
-        # never auto-created on startup to avoid AV false positives.
-        return os.path.join(base, "files")
-    def _extract_icons(self, paths: list) -> None:
-        """Extract icons into %TEMP% (not into the files folder) to avoid AV triggers."""
-        needed = [p for p in paths if p not in self._icon_cache]
-        if not needed:
-            return
-        tmp_base = _tmpdir()
-        # Map each source path to a deterministic temp PNG using MD5 of the path
-        path_to_tmp: dict[str, str] = {
-            p: os.path.join(tmp_base, f"ss_icon_{hashlib.md5(p.encode('utf-8', errors='replace')).hexdigest()}.png")
-            for p in needed
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SaieeSoft | Digital Utilities</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="saieesoft_logo.png">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
         }
-        lines = "\n".join(
-            f'    @{{src="{p.replace(chr(39), "")}" ; dst="{path_to_tmp[p].replace(chr(39), "")}"}}'
-            for p in needed
-        )
-        ps = (
-            "Add-Type -AssemblyName System.Drawing\n$items=@(\n" + lines + "\n)\n"
-            "foreach($item in $items){try{$i=[System.Drawing.Icon]::ExtractAssociatedIcon($item.src)\n"
-            "if($i){$b=$i.ToBitmap();$b.Save($item.dst,[System.Drawing.Imaging.ImageFormat]::Png)\n"
-            "$i.Dispose();$b.Dispose()}}catch{}}\n"
-        )
-        try:
-            subprocess.run(
-                [_PS, "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps],
-                creationflags=0x08000000, timeout=15,
-            )
-        except Exception:
-            pass
-        for p in needed:
-            tmp = path_to_tmp[p]
-            img = None
-            try:
-                from PIL import Image as PIL_Image
-                if os.path.exists(tmp):
-                    pil = PIL_Image.open(tmp).convert("RGBA").resize((40, 40))
-                    img = ctk.CTkImage(light_image=pil, dark_image=pil, size=(40, 40))
-                    _cleanup(tmp)
-            except Exception:
-                pass
-            self._icon_cache[p] = img
-    def _build_apps(self, tab, t: dict) -> None:
-        for w in tab.winfo_children():
-            w.destroy()
-        self._heading(tab, "apps")
-        col       = TAB_ACCENT["apps"]
-        files_dir = self._files_dir()
-        EXTS      = {".exe", ".msi", ".msix", ".msixbundle", ".appx", ".appxbundle"}
-        EMOJIS    = {".exe": "⚙", ".msi": "📦", ".msix": "🪟",
-                     ".msixbundle": "🪟", ".appx": "🪟", ".appxbundle": "🪟"}
-        # Only read the folder if it already exists — never create it here
-        all_files = []
-        if os.path.isdir(files_dir):
-            for n in sorted(os.listdir(files_dir)):
-                if os.path.splitext(n)[1].lower() in EXTS:
-                    all_files.append(os.path.join(files_dir, n))
-        if all_files:
-            self._extract_icons(all_files)
-        # Toolbar
-        tb = ctk.CTkFrame(tab, fg_color="transparent")
-        tb.pack(fill="x", pady=(0, 8))
-        sv = ctk.StringVar()
-        ctk.CTkEntry(
-            tb, textvariable=sv, placeholder_text="⌕ " + t["search"],
-            width=240, height=32, corner_radius=8,
-            fg_color=BG_CARD, border_color=BD_CARD, border_width=1,
-            text_color=TX_1, placeholder_text_color=TX_2, font=("Segoe UI", 11),
-        ).pack(side="left", padx=(0, 10))
-        ctk.CTkLabel(tb, text=files_dir, font=("Segoe UI", 10),
-                     text_color=TX_2).pack(side="left", padx=4)
-        ctk.CTkButton(
-            tb, text="↺ " + t["refresh"], font=F_BTN, height=30,
-            corner_radius=8, width=90, fg_color=BG_CARD, hover_color=col,
-            text_color=TX_1, border_width=1, border_color=BD_CARD,
-            command=lambda: self._build_apps(tab, t),
-        ).pack(side="right")
-        if not all_files:
-            ec = ctk.CTkFrame(tab, fg_color=BG_CARD, corner_radius=10,
-                              border_width=1, border_color=BD_CARD)
-            ec.pack(fill="x", pady=12)
-            ctk.CTkLabel(ec, text="📭", font=("Segoe UI Emoji", 32),
-                         text_color=TX_3).pack(pady=(20, 4))
-            ctk.CTkLabel(ec, text=t["apps_empty"], font=F_TOOL_D,
-                         text_color=TX_2, justify="center").pack(pady=(0, 16), padx=20)
-            ctk.CTkButton(
-                tab, text="📂 " + t["open_folder"], font=F_BTN,
-                height=28, corner_radius=8, width=170,
-                fg_color=BG_CARD, hover_color=col, text_color=TX_1,
-                border_width=1, border_color=BD_CARD,
-                command=lambda: self._open_folder(files_dir),
-            ).pack(pady=4)
-            return
-        COLS = 3
-        grid = ctk.CTkFrame(tab, fg_color="transparent")
-        grid.pack(fill="both", expand=True)
-        for c in range(COLS):
-            grid.columnconfigure(c, weight=1)
-        def build_cards(items: list) -> None:
-            for w in grid.winfo_children():
-                w.destroy()
-            for idx, path in enumerate(items):
-                r, c  = divmod(idx, COLS)
-                name  = os.path.basename(path)
-                ext   = os.path.splitext(name)[1].lower()
-                lbl   = os.path.splitext(name)[0]
-                sk    = os.path.getsize(path) // 1024
-                ss    = f"{sk/1024:.1f} MB" if sk >= 1024 else f"{sk} KB"
-                card = ctk.CTkFrame(grid, fg_color=BG_CARD, corner_radius=8,
-                                    border_width=1, border_color=BD_CARD)
-                card.grid(row=r, column=c, padx=4, pady=4, sticky="nsew")
-                card.columnconfigure(0, weight=1)
-                ctk.CTkFrame(card, height=2, fg_color=col, corner_radius=0).grid(
-                    row=0, column=0, sticky="ew")
-                ci = self._icon_cache.get(path)
-                if ci:
-                    ctk.CTkLabel(card, image=ci, text="").grid(row=1, column=0, pady=(10, 4))
-                else:
-                    ctk.CTkLabel(card, text=EMOJIS.get(ext, "📄"),
-                                 font=("Segoe UI Emoji", 26)).grid(row=1, column=0, pady=(10, 4))
-                ctk.CTkLabel(card, text=lbl, font=("Segoe UI", 10, "bold"),
-                             text_color=TX_1, wraplength=155).grid(row=2, column=0, padx=8, pady=2)
-                ctk.CTkLabel(card, text=f"{ext[1:].upper()} · {ss}",
-                             font=("Segoe UI", 9), text_color=TX_2).grid(row=3, column=0, pady=(0, 6))
-                bf = ctk.CTkFrame(card, fg_color="transparent")
-                bf.grid(row=4, column=0, pady=(2, 12))
-                bi = ctk.CTkButton(
-                    bf, text="▶ " + t["install"], font=F_BTN,
-                    height=26, corner_radius=6, width=95,
-                    fg_color=col, hover_color=AC_BLUE_H, text_color="#ffffff",
-                )
-                bi.configure(command=lambda b=bi, p=path: (_flash(b, AC_BLUE_H), self._launch(p)))
-                bi.pack(side="left", padx=(0, 4))
-                bd = ctk.CTkButton(
-                    bf, text="✕", font=("Segoe UI", 10, "bold"),
-                    height=26, corner_radius=6, width=26,
-                    fg_color="#1e1010", hover_color=C_OFF, text_color=TX_2,
-                )
-                bd.configure(command=lambda p=path, l=lbl: self._delete_file(p, l, t))
-                bd.pack(side="left")
-        build_cards(all_files)
-        def on_search(*_):
-            q = sv.get().strip().lower()
-            filtered = [p for p in all_files
-                        if q in os.path.splitext(os.path.basename(p))[0].lower()]
-            build_cards(filtered)
-        sv.trace_add("write", on_search)
-        ctk.CTkButton(
-            tab, text="📂 " + t["open_folder"], font=F_BTN,
-            height=26, corner_radius=6, width=160,
-            fg_color="transparent", border_width=1, border_color=BD_CARD,
-            text_color=TX_2, hover_color=BD_CARD,
-            command=lambda: self._open_folder(files_dir),
-        ).pack(pady=(6, 4))
-    def _delete_file(self, path: str, label: str, t: dict) -> None:
-        if messagebox.askyesno("SwiftService", t["del_confirm"].replace("{name}", label)):
-            try:
-                os.remove(path)
-                self._icon_cache.pop(path, None)
-            except Exception as e:
-                _report_error("SwiftService", str(e))
-                return
-            self._build_apps(self._tabs["apps"], t)
-    def _open_folder(self, folder: str) -> None:
-        # Folder is only created here — on explicit user request
-        os.makedirs(folder, exist_ok=True)
-        subprocess.Popen(["explorer", folder])
-    @_run_in_thread
-    def _launch(self, path: str) -> None:
-        try:
-            ext = os.path.splitext(path)[1].lower()
-            if ext == ".msi":
-                subprocess.run(["msiexec", "/i", path],
-                               creationflags=subprocess.CREATE_NEW_CONSOLE)
-            elif ext in (".msix", ".msixbundle", ".appx", ".appxbundle"):
-                run_ps_visible(f'Add-AppxPackage -Path "{path}"')
-            else:
-                subprocess.run([path], creationflags=subprocess.CREATE_NEW_CONSOLE)
-        except Exception as e:
-            _report_error("SwiftService", str(e))
-# ══════════════════════════════════════════════════════════════════════════════
-#  ENTRY POINT
-# ══════════════════════════════════════════════════════════════════════════════
-if __name__ == "__main__":
-    if is_admin():
-        App().mainloop()
-    else:
-        exe_dir = os.path.dirname(sys.executable)
-        pythonw = os.path.join(
-            exe_dir,
-            os.path.basename(sys.executable).lower().replace("python", "pythonw"),
-        )
-        if not os.path.exists(pythonw):
-            pythonw = sys.executable
-        ctypes.windll.shell32.ShellExecuteW(
-            None, "runas", pythonw,
-            f'"{os.path.abspath(sys.argv[0])}"',
-            None, 1,
-        )
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .glass-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2);
+        }
+        
+        .glow {
+            position: relative;
+        }
+        
+        .glow::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6, #06b6d4);
+            border-radius: inherit;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+            filter: blur(20px);
+        }
+        
+        .glow:hover::before {
+            opacity: 0.4;
+        }
+        
+        .nav-link {
+            position: relative;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-primary);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 1px;
+            bottom: -4px;
+            left: 0;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .input-field {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: float 20s infinite ease-in-out;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(30px, -50px); }
+            66% { transform: translate(-20px, 20px); }
+        }
+        
+        .fade-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards;
+        }
+        
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        
+        .tag {
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.5);
+        }
+        
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease;
+        }
+        
+        .mobile-menu.open {
+            max-height: 400px;
+        }
+    </style>
+</head>
+<body class="antialiased relative">
+    <div class="noise"></div>
+    <div class="orb w-96 h-96 bg-indigo-500 top-0 left-0"></div>
+    <div class="orb w-80 h-80 bg-purple-500 bottom-0 right-0 animation-delay-2000"></div>
+    <div class="orb w-64 h-64 bg-cyan-500 top-1/2 left-1/2 animation-delay-4000"></div>
+
+    <!-- Header -->
+    <header class="fixed w-full top-0 z-50 glass-card border-x-0 border-t-0">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 transition-transform">
+                        S
+                    </div>
+                    <span class="text-xl font-bold tracking-tight">Saiee<span class="gradient-text">Soft</span></span>
+                </a>
+                
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="#projects" class="nav-link text-sm font-medium" data-translate="projects">Projects</a>
+                    <a href="#contact" class="nav-link text-sm font-medium" data-translate="contact">Contact</a>
+                    <div class="h-4 w-px bg-white/10"></div>
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-white/5 transition text-slate-400 hover:text-white">
+                        <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                        <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
+                    </button>
+                    <div class="flex gap-2 text-xs font-medium">
+                        <button onclick="setLanguage('en')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="en">EN</button>
+                        <button onclick="setLanguage('ru')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="ru">RU</button>
+                        <button onclick="setLanguage('ua')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="ua">UA</button>
+                        <button onclick="setLanguage('pl')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="pl">PL</button>
+                    </div>
+                </nav>
+                
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-400 hover:text-white">
+                    <i data-lucide="menu" class="w-6 h-6" id="menuIcon"></i>
+                </button>
+            </div>
+            
+            <div id="mobileMenu" class="mobile-menu md:hidden">
+                <div class="flex flex-col gap-4 pt-6 pb-2 border-t border-white/10 mt-4">
+                    <a href="#projects" class="text-slate-400 hover:text-white transition" data-translate="projects">Projects</a>
+                    <a href="#contact" class="text-slate-400 hover:text-white transition" data-translate="contact">Contact</a>
+                    <div class="flex gap-4 text-sm pt-2">
+                        <button onclick="setLanguage('en')" class="text-slate-400 hover:text-white">English</button>
+                        <button onclick="setLanguage('ru')" class="text-slate-400 hover:text-white">Русский</button>
+                        <button onclick="setLanguage('ua')" class="text-slate-400 hover:text-white">Українська</button>
+                        <button onclick="setLanguage('pl')" class="text-slate-400 hover:text-white">Polski</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="pt-32 pb-20 lg:pt-48 lg:pb-32 relative overflow-hidden">
+        <div class="container mx-auto px-6 text-center relative z-10">
+            <div class="max-w-4xl mx-auto">
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 fade-up">
+                    <span data-translate="heroTitle">Crafting</span> <span class="gradient-text" data-translate="heroTitleAccent">Digital Tools</span>
+                </h1>
+                <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 fade-up delay-100" data-translate="heroSubtitle">
+                    Minimalist utilities designed for modern workflows. Clean, efficient, and meticulously crafted.
+                </p>
+                <div class="flex justify-center gap-4 fade-up delay-200">
+                    <a href="#projects" class="btn-primary px-8 py-3 rounded-full font-medium text-white flex items-center gap-2">
+                        <span data-translate="exploreProjects">Explore Projects</span>
+                        <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                    </a>
+                    <a href="#contact" class="px-8 py-3 rounded-full font-medium border border-white/10 hover:bg-white/5 transition text-slate-300" data-translate="getInTouch">
+                        Get in Touch
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="mb-16 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 fade-up" data-translate="projectsTitle">Featured <span class="gradient-text">Works</span></h2>
+                <p class="text-slate-400 max-w-xl mx-auto fade-up delay-100" data-translate="projectsSubtitle">
+                    A curated selection of utilities built with precision and attention to detail.
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <!-- SwiftService -->
+                <div class="glass-card rounded-2xl p-6 glow group fade-up">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="settings" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <h3 class="text-xl font-bold">SwiftService</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" data-translate="newBadge">NEW</span>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="swiftserviceDesc">
+                        Advanced Windows optimization suite. System cleaning, registry maintenance, and performance tuning in one lightweight utility.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagSystem">System</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagWindows">Windows</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagUtils">Utilities</span>
+                    </div>
+                    <a href="#" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span data-translate="downloadFor">Download for</span> Windows
+                    </a>
+                </div>
+
+                <!-- Exolute Converter -->
+                <div class="glass-card rounded-2xl p-6 glow group fade-up delay-100">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="arrow-left-right" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <h3 class="text-xl font-bold">Exolute Converter</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" data-translate="popularBadge">POPULAR</span>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="exoluteDesc">
+                        Real-time currency conversion with historical analytics, offline mode support, and intuitive interface design.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagFinance">Finance</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagAndroid">Android</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagOffline">Offline</span>
+                    </div>
+                    <a href="https://play.google.com/store/apps/details?id=com.saieesoft.exolute" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <span data-translate="viewOnStore">View on Play Store</span>
+                    </a>
+                </div>
+
+                <!-- AskAnonymousBot -->
+                <div class="glass-card rounded-2xl p-6 glow group fade-up delay-200">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
+                    </div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <h3 class="text-xl font-bold">@AskAnonymousBot</h3>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="askanonymousDesc">
+                        Telegram bot for anonymous messaging. End-to-end privacy, no data storage, and seamless group integration.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagSocial">Social</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagPrivacy">Privacy</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full">Telegram</span>
+                    </div>
+                    <a href="https://t.me/AskAnonymousBot" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        <span data-translate="openInTelegram">Open in Telegram</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="max-w-4xl mx-auto">
+                <div class="glass-card rounded-3xl p-8 md:p-12 fade-up">
+                    <div class="grid md:grid-cols-2 gap-12">
+                        <div>
+                            <h2 class="text-3xl font-bold mb-4" data-translate="contactTitle">Let's <span class="gradient-text">Collaborate</span></h2>
+                            <p class="text-slate-400 mb-8" data-translate="contactSubtitle">
+                                Have a project in mind or want to discuss potential opportunities? Reach out directly.
+                            </p>
+                            
+                            <div class="space-y-4">
+                                <a href="mailto:saieesoft.dev@gmail.com" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
+                                    <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
+                                        <i data-lucide="mail" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="text-sm">saieesoft.dev@gmail.com</span>
+                                </a>
+                                <a href="https://github.com/saieesoft" target="_blank" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
+                                    <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
+                                        <i data-lucide="github" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="text-sm">github.com/saieesoft</span>
+                                </a>
+                                <a href="https://play.google.com/store/apps/dev?id=6446780682856756622" target="_blank" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
+                                    <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
+                                        <i data-lucide="smartphone" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="text-sm" data-translate="playStore">Play Store Developer</span>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <form action="https://formsubmit.co/saieesoft.dev@gmail.com" method="POST" class="space-y-4">
+                            <input type="hidden" name="_captcha" value="false">
+                            <div>
+                                <input type="text" name="name" placeholder="Name" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500">
+                            </div>
+                            <div>
+                                <input type="email" name="email" placeholder="Email" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500">
+                            </div>
+                            <div>
+                                <textarea name="message" placeholder="Message" rows="4" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 resize-none"></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary w-full py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2">
+                                <span data-translate="sendMessage">Send Message</span>
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 border-t border-white/10 mt-20">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-slate-500 text-sm" data-translate="copyright">© 2026 SaieeSoft. All rights reserved.</p>
+            <div class="flex gap-6">
+                <a href="#" class="text-slate-500 hover:text-white transition text-sm" data-translate="projects">Projects</a>
+                <a href="#contact" class="text-slate-500 hover:text-white transition text-sm" data-translate="contact">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Translations
+        const translations = {
+            en: {
+                projects: "Projects",
+                contact: "Contact",
+                heroTitle: "Crafting",
+                heroTitleAccent: "Digital Tools",
+                heroSubtitle: "Minimalist utilities designed for modern workflows. Clean, efficient, and meticulously crafted.",
+                exploreProjects: "Explore Projects",
+                getInTouch: "Get in Touch",
+                projectsTitle: "Featured",
+                projectsSubtitle: "A curated selection of utilities built with precision and attention to detail.",
+                newBadge: "NEW",
+                popularBadge: "POPULAR",
+                swiftserviceDesc: "Advanced Windows optimization suite. System cleaning, registry maintenance, and performance tuning in one lightweight utility.",
+                exoluteDesc: "Real-time currency conversion with historical analytics, offline mode support, and intuitive interface design.",
+                askanonymousDesc: "Telegram bot for anonymous messaging. End-to-end privacy, no data storage, and seamless group integration.",
+                tagSystem: "System",
+                tagWindows: "Windows",
+                tagUtils: "Utilities",
+                tagFinance: "Finance",
+                tagAndroid: "Android",
+                tagOffline: "Offline",
+                tagSocial: "Social",
+                tagPrivacy: "Privacy",
+                downloadFor: "Download for",
+                viewOnStore: "View on Play Store",
+                openInTelegram: "Open in Telegram",
+                contactTitle: "Let's",
+                contactSubtitle: "Have a project in mind or want to discuss potential opportunities? Reach out directly.",
+                playStore: "Play Store Developer",
+                sendMessage: "Send Message",
+                copyright: "© 2026 SaieeSoft. All rights reserved."
+            },
+            ru: {
+                projects: "Проекты",
+                contact: "Контакты",
+                heroTitle: "Создаем",
+                heroTitleAccent: "Цифровые Инструменты",
+                heroSubtitle: "Минималистичные утилиты для современных задач. Чистые, эффективные и тщательно продуманные.",
+                exploreProjects: "Смотреть проекты",
+                getInTouch: "Связаться",
+                projectsTitle: "Избранные",
+                projectsSubtitle: "Подборка утилит, созданных с точностью и вниманием к деталям.",
+                newBadge: "НОВИНКА",
+                popularBadge: "ПОПУЛЯРНО",
+                swiftserviceDesc: "Продвинутый набор для оптимизации Windows. Очистка системы, работа с реестром и настройка производительности в одной легкой утилите.",
+                exoluteDesc: "Конвертация валют в реальном времени с исторической аналитикой, поддержкой офлайн-режима и интуитивным дизайном.",
+                askanonymousDesc: "Telegram-бот для анонимных сообщений. Приватность без компромиссов, без хранения данных и бесшовная интеграция в группы.",
+                tagSystem: "Система",
+                tagWindows: "Windows",
+                tagUtils: "Утилиты",
+                tagFinance: "Финансы",
+                tagAndroid: "Android",
+                tagOffline: "Офлайн",
+                tagSocial: "Социальное",
+                tagPrivacy: "Приватность",
+                downloadFor: "Скачать для",
+                viewOnStore: "Смотреть в Play Store",
+                openInTelegram: "Открыть в Telegram",
+                contactTitle: "Давайте",
+                contactSubtitle: "Есть идея проекта или хотите обсудить сотрудничество? Свяжитесь напрямую.",
+                playStore: "Разработчик Play Store",
+                sendMessage: "Отправить",
+                copyright: "© 2026 SaieeSoft. Все права защищены."
+            },
+            ua: {
+                projects: "Проєкти",
+                contact: "Контакти",
+                heroTitle: "Створюємо",
+                heroTitleAccent: "Цифрові Інструменти",
+                heroSubtitle: "Мінімалістичні утиліти для сучасних задач. Чисті, ефективні та ретельно продумані.",
+                exploreProjects: "Дивитись проєкти",
+                getInTouch: "Зв'язатись",
+                projectsTitle: "Вибрані",
+                projectsSubtitle: "Підбірка утиліт, створених з точністю та увагою до деталей.",
+                newBadge: "НОВЕ",
+                popularBadge: "ПОПУЛЯРНЕ",
+                swiftserviceDesc: "Просунутий набір для оптимізації Windows. Очищення системи, робота з реєстром та налаштування продуктивності в одній легкій утиліті.",
+                exoluteDesc: "Конвертація валют у реальному часі з історичною аналітикою, підтримкою офлайн-режиму та інтуїтивним дизайном.",
+                askanonymousDesc: "Telegram-бот для анонімних повідомлень. Приватність без компромісів, без зберігання даних та безшовна інтеграція в групи.",
+                tagSystem: "Система",
+                tagWindows: "Windows",
+                tagUtils: "Утиліти",
+                tagFinance: "Фінанси",
+                tagAndroid: "Android",
+                tagOffline: "Офлайн",
+                tagSocial: "Соціальне",
+                tagPrivacy: "Конфіденційність",
+                downloadFor: "Завантажити для",
+                viewOnStore: "Дивитись у Play Store",
+                openInTelegram: "Відкрити в Telegram",
+                contactTitle: "Давайте",
+                contactSubtitle: "Є ідея проєкту або хочете обговорити співпрацю? Зв'яжіться напряму.",
+                playStore: "Розробник Play Store",
+                sendMessage: "Надіслати",
+                copyright: "© 2026 SaieeSoft. Всі права захищені."
+            },
+            pl: {
+                projects: "Projekty",
+                contact: "Kontakt",
+                heroTitle: "Tworzymy",
+                heroTitleAccent: "Cyfrowe Narzędzia",
+                heroSubtitle: "Minimalistyczne narzędzia dla nowoczesnych zadań. Czyste, wydajne i starannie dopracowane.",
+                exploreProjects: "Przeglądaj projekty",
+                getInTouch: "Kontakt",
+                projectsTitle: "Wyróżnione",
+                projectsSubtitle: "Wyselekcjonowany zestaw narzędzi zbudowanych z precyzją i dbałością o szczegóły.",
+                newBadge: "NOWOŚĆ",
+                popularBadge: "POPULARNE",
+                swiftserviceDesc: "Zaawansowany zestaw optymalizacji Windows. Czyszczenie systemu, konserwacja rejestru i dostrajanie wydajności w jednym lekkim narzędziu.",
+                exoluteDesc: "Konwersja walut w czasie rzeczywistym z analizą historyczną, obsługą trybu offline i intuicyjnym projektem.",
+                askanonymousDesc: "Bot Telegram do anonimowych wiadomości. Prywatność bez kompromisów, brak przechowywania danych i płynna integracja z grupami.",
+                tagSystem: "System",
+                tagWindows: "Windows",
+                tagUtils: "Narzędzia",
+                tagFinance: "Finanse",
+                tagAndroid: "Android",
+                tagOffline: "Offline",
+                tagSocial: "Społeczność",
+                tagPrivacy: "Prywatność",
+                downloadFor: "Pobierz dla",
+                viewOnStore: "Zobacz w Play Store",
+                openInTelegram: "Otwórz w Telegramie",
+                contactTitle: "Współpracujmy",
+                contactSubtitle: "Masz pomysł na projekt lub chcesz omówić potencjalną współpracę? Skontaktuj się bezpośrednio.",
+                playStore: "Deweloper Play Store",
+                sendMessage: "Wyślij",
+                copyright: "© 2026 SaieeSoft. Wszelkie prawa zastrzeżone."
+            }
+        };
+
+        // Auto-detect language
+        function detectLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            const shortLang = browserLang.split('-')[0];
+            const available = ['en', 'ru', 'ua', 'pl'];
+            
+            if (available.includes(shortLang)) {
+                return shortLang;
+            }
+            
+            // Fallback mappings
+            if (shortLang === 'uk') return 'ua';
+            if (shortLang === 'be' || shortLang === 'kk' || shortLang === 'ky') return 'ru';
+            
+            return 'en';
+        }
+
+        let currentLang = detectLanguage();
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.documentElement.lang = lang;
+            
+            // Update all translatable elements
+            document.querySelectorAll('[data-translate]').forEach(el => {
+                const key = el.getAttribute('data-translate');
+                if (translations[lang] && translations[lang][key]) {
+                    el.textContent = translations[lang][key];
+                }
+            });
+            
+            // Update buttons state
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('text-white', 'bg-white/10');
+                    btn.classList.remove('opacity-60');
+                } else {
+                    btn.classList.remove('text-white', 'bg-white/10');
+                    btn.classList.add('opacity-60');
+                }
+            });
+            
+            localStorage.setItem('saieesoft-lang', lang);
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('saieesoft-theme', isDark ? 'dark' : 'light');
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('menuIcon');
+            menu.classList.toggle('open');
+            
+            if (menu.classList.contains('open')) {
+                icon.setAttribute('data-lucide', 'x');
+            } else {
+                icon.setAttribute('data-lucide', 'menu');
+            }
+            lucide.createIcons();
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for saved language or use detected
+            const savedLang = localStorage.getItem('saieesoft-lang');
+            if (savedLang && translations[savedLang]) {
+                setLanguage(savedLang);
+            } else {
+                setLanguage(detectLanguage());
+            }
+            
+            // Check for saved theme
+            const savedTheme = localStorage.getItem('saieesoft-theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
+            
+            // Initialize Lucide icons
+            lucide.createIcons();
+            
+            // Initialize intersection observer for animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.fade-up').forEach(el => {
+                observer.observe(el);
+            });
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Close mobile menu if open
+                    document.getElementById('mobileMenu').classList.remove('open');
+                    lucide.createIcons();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
