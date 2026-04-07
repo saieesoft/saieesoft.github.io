@@ -3,109 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SaieeSoft | Homepage</title>
+    <title>SaieeSoft | Digital Utilities</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="saieesoft_logo.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="saieesoft_logo.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="saieesoft_logo.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="saieesoft_logo.png">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         
         :root {
-            --primary: #6366f1;
-            --primary-dark: #4f46e5;
-            --secondary: #10b981;
-            --dark: #1e293b;
-            --light: #f8fafc;
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --accent: #6366f1;
+            --accent-hover: #4f46e5;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --glass: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+        
+        * {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
         
         body {
-            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
             overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            text-rendering: optimizeLegibility;
-            transition: background-color 0.3s ease, color 0.3s ease;
         }
         
-        .gradient-bg {
-            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%);
+        .gradient-text {
+            background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         
         .glass-card {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
-        .app-card {
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform-style: preserve-3d;
-            perspective: 1000px;
-            box-shadow: 0 10px 30px -15px rgba(0, 0, 0, 0.1);
+        .glass-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2);
         }
         
-        .app-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
-        }
-        
-        .app-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-            border-radius: 1rem;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .app-card:hover::before {
-            opacity: 1;
-        }
-        
-        .download-btn {
-            transition: all 0.3s ease;
+        .glow {
             position: relative;
-            overflow: hidden;
         }
         
-        .download-btn::after {
+        .glow::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: all 0.5s ease;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #6366f1, #8b5cf6, #06b6d4);
+            border-radius: inherit;
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+            filter: blur(20px);
         }
         
-        .download-btn:hover::after {
-            left: 100%;
+        .glow:hover::before {
+            opacity: 0.4;
         }
         
         .nav-link {
             position: relative;
-            transition: all 0.3s ease;
+            color: var(--text-secondary);
+            transition: color 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--text-primary);
         }
         
         .nav-link::after {
             content: '';
             position: absolute;
             width: 0;
-            height: 2px;
+            height: 1px;
             bottom: -4px;
             left: 0;
-            background-color: white;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
             transition: width 0.3s ease;
         }
         
@@ -113,1008 +101,556 @@
             width: 100%;
         }
         
-        .nav-link:hover {
-            transform: translateY(-2px);
+        .input-field {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.5);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .noise {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+            opacity: 0.03;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+        
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: float 20s infinite ease-in-out;
         }
         
         @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(30px, -50px); }
+            66% { transform: translate(-20px, 20px); }
         }
         
-        .floating {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
+        .fade-up {
             opacity: 0;
-            animation: fadeIn 0.8s ease forwards;
+            transform: translateY(30px);
+            animation: fadeUp 0.8s ease forwards;
         }
         
-        .gradient-text {
-            background: linear-gradient(90deg, #6366f1, #10b981);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+        @keyframes fadeUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         
-        .shape-blob {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
-            height: 200px;
-            width: 200px;
-            border-radius: 30% 50% 20% 40%;
-            position: absolute;
-            z-index: -1;
-            filter: blur(30px);
-            opacity: 0.8;
+        .delay-100 { animation-delay: 0.1s; }
+        .delay-200 { animation-delay: 0.2s; }
+        .delay-300 { animation-delay: 0.3s; }
+        
+        .tag {
+            background: rgba(99, 102, 241, 0.1);
+            color: #818cf8;
+            border: 1px solid rgba(99, 102, 241, 0.2);
         }
         
-        .shape-blob.one {
-            left: -50px;
-            top: 100px;
-            transform: rotate(-30deg);
-            animation: blob-one 15s linear infinite;
-        }
-        
-        .shape-blob.two {
-            right: -50px;
-            bottom: 100px;
-            transform: rotate(150deg);
-            animation: blob-two 20s linear infinite;
-        }
-        
-        @keyframes blob-one {
-            0% { transform: rotate(-30deg) translate(0, 0); }
-            25% { transform: rotate(-30deg) translate(50px, 50px); }
-            50% { transform: rotate(-30deg) translate(0, 100px); }
-            75% { transform: rotate(-30deg) translate(-50px, 50px); }
-            100% { transform: rotate(-30deg) translate(0, 0); }
-        }
-        
-        @keyframes blob-two {
-            0% { transform: rotate(150deg) translate(0, 0); }
-            25% { transform: rotate(150deg) translate(-50px, -50px); }
-            50% { transform: rotate(150deg) translate(0, -100px); }
-            75% { transform: rotate(150deg) translate(50px, -50px); }
-            100% { transform: rotate(150deg) translate(0, 0); }
-        }
-        
-        .tech-icon {
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             transition: all 0.3s ease;
-            filter: grayscale(100%);
-            opacity: 0.7;
         }
         
-        .tech-icon:hover {
-            filter: grayscale(0%);
-            opacity: 1;
-            transform: scale(1.1);
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.5);
         }
         
         .mobile-menu {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.5s ease-out;
+            transition: max-height 0.4s ease;
         }
         
         .mobile-menu.open {
-            max-height: 500px;
+            max-height: 400px;
         }
-        
-        .contact-input {
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .contact-input:focus {
-            background: rgba(255, 255, 255, 0.1);
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3);
-        }
-        
-        .social-icon {
-            transition: all 0.3s ease;
-        }
-        
-        .social-icon:hover {
-            transform: translateY(-5px) scale(1.1);
-        }
-        
-        .app-icon {
-            transition: all 0.5s ease;
-        }
-        
-        .app-card:hover .app-icon {
-            transform: rotate(10deg) scale(1.1);
-        }
-        
-        .parallax-bg {
-            background-attachment: fixed;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-        }
-        
-        .stats-item {
-            transition: all 0.3s ease;
-        }
-        
-        .stats-item:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        body.dark {
-            --dark: #f8fafc;
-            --light: #1e293b;
-        }
-
-        .dark {
-            background-color: #1e293b;
-            color: #cbd5e1;
-        }
-        .dark .gradient-bg, .dark .bg-gray-900{
-            background: #1e293b;
-        }
-        .dark .bg-white { background-color: #334155; }
-        .dark .bg-gray-50 { background-color: #1a2638; }
-        .dark .stats-item.bg-gray-50 { background-color: #334155; }
-        .dark .text-gray-800 { color: #f1f5f9; }
-        .dark .text-gray-600 { color: #94a3b8; }
-        .dark .text-gray-500 { color: #a1a1aa; }
-        .dark .text-gray-400 { color: #94a3b8; }
-        .dark .border-gray-100 { border-color: #475569; }
-        .dark .border-gray-800 { border-color: #334155; }
-        .dark .hover\:border-indigo-200:hover { border-color: #a5b4fc; }
-        .dark .text-indigo-600, .dark .text-indigo-400 { color: #a5b4fc; }
-        .dark .bg-gradient-to-br.from-blue-50.to-blue-100 { background-image: linear-gradient(to bottom right, #1e3a8a, #1e40af); }
-        .dark .bg-gradient-to-br.from-purple-50.to-purple-100 { background-image: linear-gradient(to bottom right, #3b0764, #5b21b6); }
-        .dark .bg-gradient-to-br.from-pink-50.to-pink-100 { background-image: linear-gradient(to bottom right, #831843, #be185d); }
-        .dark .bg-blue-100 { background-color: #1e40af; color: #bfdbfe; }
-        .dark .text-blue-800 { color: #bfdbfe; }
-        .dark .bg-green-100 { background-color: #166534; color: #bbf7d0; }
-        .dark .text-green-800 { color: #bbf7d0; }
-        .dark .bg-purple-100 { background-color: #5b21b6; color: #e9d5ff; }
-        .dark .text-purple-800 { color: #e9d5ff; }
-        .dark .bg-yellow-100 { background-color: #854d0e; color: #fef08a; }
-        .dark .text-yellow-800 { color: #fef08a; }
-        .dark .bg-pink-100 { background-color: #9d174d; color: #fbcfe8; }
-        .dark .text-pink-800 { color: #fbcfe8; }
-        .dark .bg-gray-100 { background-color: #475569; color: #e2e8f0; }
-        .dark .tech-icon { filter: grayscale(0); opacity: 0.8; }
-        .dark .tech-icon.bg-white { background-color: #475569; }
-        .dark .social-icon:hover { color: #6366f1; }
-        .dark .bg-indigo-100 { background-color: #312e81 !important; }
-        .dark .text-indigo-500 { color: #a5b4fc !important; }
-        .dark .from-indigo-100 { --tw-gradient-from: #312e81 !important; }
-        .dark .to-indigo-200 { --tw-gradient-to: #3730a3 !important; }
-        
-        .theme-icon-dark { display: none; }
-        .theme-icon-light { display: block; }
-        .dark .theme-icon-light { display: none; }
-        .dark .theme-icon-dark { display: block; }
     </style>
 </head>
-<body class="relative">
-    <div class="shape-blob one"></div>
-    <div class="shape-blob two"></div>
-    
-    <header class="gradient-bg text-white fixed w-full z-50 shadow-lg">
-        <div class="container mx-auto px-4 py-4">
+<body class="antialiased relative">
+    <div class="noise"></div>
+    <div class="orb w-96 h-96 bg-indigo-500 top-0 left-0"></div>
+    <div class="orb w-80 h-80 bg-purple-500 bottom-0 right-0 animation-delay-2000"></div>
+    <div class="orb w-64 h-64 bg-cyan-500 top-1/2 left-1/2 animation-delay-4000"></div>
+
+    <!-- Header -->
+    <header class="fixed w-full top-0 z-50 glass-card border-x-0 border-t-0">
+        <div class="container mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-full bg-white flex items-center justify-center">
-                        <i class="fas fa-code text-xl text-indigo-600"></i>
+                <a href="#" class="flex items-center gap-3 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xl group-hover:scale-110 transition-transform">
+                        S
                     </div>
-                    <h1 class="text-2xl font-bold">Saiee<span class="gradient-text">Soft</span></h1>
-                </div>
+                    <span class="text-xl font-bold tracking-tight">Saiee<span class="gradient-text">Soft</span></span>
+                </a>
                 
-                <nav class="hidden md:flex items-center space-x-6">
-                    <a href="#" class="nav-link" data-translate="home">Home</a>
-                    <a href="#apps" class="nav-link" data-translate="apps">My Apps</a>
-                    <a href="#about" class="nav-link" data-translate="about">About Me</a>
-                    <a href="#contact" class="nav-link" data-translate="contact">Contact</a>
-                    <button id="theme-toggle" class="text-white text-xl p-2 rounded-full hover:bg-black/20 transition-transform duration-300 hover:scale-110">
-                        <i class="fas fa-moon theme-icon-dark"></i>
-                        <i class="fas fa-sun theme-icon-light"></i>
+                <nav class="hidden md:flex items-center gap-8">
+                    <a href="#projects" class="nav-link text-sm font-medium" data-translate="projects">Projects</a>
+                    <a href="#contact" class="nav-link text-sm font-medium" data-translate="contact">Contact</a>
+                    <div class="h-4 w-px bg-white/10"></div>
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg hover:bg-white/5 transition text-slate-400 hover:text-white">
+                        <i data-lucide="moon" class="w-5 h-5 hidden dark:block"></i>
+                        <i data-lucide="sun" class="w-5 h-5 block dark:hidden"></i>
                     </button>
-                    <div class="flex space-x-2">
-                        <button class="lang-btn px-3 py-1 rounded-md hover:bg-indigo-500 transition" data-lang="en">EN</button>
-                        <button class="lang-btn px-3 py-1 rounded-md hover:bg-indigo-500 transition" data-lang="ru">RU</button>
-                        <button class="lang-btn px-3 py-1 rounded-md hover:bg-indigo-500 transition" data-lang="ua">UA</button>
+                    <div class="flex gap-2 text-xs font-medium">
+                        <button onclick="setLanguage('en')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="en">EN</button>
+                        <button onclick="setLanguage('ru')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="ru">RU</button>
+                        <button onclick="setLanguage('ua')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="ua">UA</button>
+                        <button onclick="setLanguage('pl')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="pl">PL</button>
                     </div>
                 </nav>
                 
-                <button id="mobileMenuButton" class="md:hidden text-xl p-2 rounded-full hover:bg-indigo-700 transition">
-                    <i class="fas fa-bars"></i>
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-400 hover:text-white">
+                    <i data-lucide="menu" class="w-6 h-6" id="menuIcon"></i>
                 </button>
             </div>
             
             <div id="mobileMenu" class="mobile-menu md:hidden">
-                <div class="flex flex-col space-y-4 py-4">
-                    <a href="#" class="nav-link block" data-translate="home">Home</a>
-                    <a href="#apps" class="nav-link block" data-translate="apps">My Apps</a>
-                    <a href="#about" class="nav-link block" data-translate="about">About Me</a>
-                    <a href="#contact" class="nav-link block" data-translate="contact">Contact</a>
-                    <button id="theme-toggle-mobile" class="text-left w-full py-2 nav-link flex items-center text-white opacity-90">
-                       <div class="w-6 mr-2 text-center">
-                         <i class="fas fa-moon theme-icon-dark"></i>
-                         <i class="fas fa-sun theme-icon-light"></i>
-                       </div>
-                       <span data-translate="toggleTheme">Change Theme</span>
-                    </button>
-                    <div class="flex space-x-2 pt-2">
-                        <button class="lang-btn px-3 py-1 rounded-md hover:bg-indigo-500 transition" data-lang="en">EN</button>
-                        <button class="lang-btn px-3 py-1 rounded-md hover:bg-indigo-500 transition" data-lang="ru">RU</button>
-                        <button class="lang-btn px-3 py-1 rounded-md hover:bg-indigo-500 transition" data-lang="ua">UA</button>
+                <div class="flex flex-col gap-4 pt-6 pb-2 border-t border-white/10 mt-4">
+                    <a href="#projects" class="text-slate-400 hover:text-white transition" data-translate="projects">Projects</a>
+                    <a href="#contact" class="text-slate-400 hover:text-white transition" data-translate="contact">Contact</a>
+                    <div class="flex gap-4 text-sm pt-2">
+                        <button onclick="setLanguage('en')" class="text-slate-400 hover:text-white">English</button>
+                        <button onclick="setLanguage('ru')" class="text-slate-400 hover:text-white">Русский</button>
+                        <button onclick="setLanguage('ua')" class="text-slate-400 hover:text-white">Українська</button>
+                        <button onclick="setLanguage('pl')" class="text-slate-400 hover:text-white">Polski</button>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <section class="gradient-bg text-white pt-32 pb-20 relative overflow-hidden">
-        <div class="container mx-auto px-4 text-center relative z-10">
+    <!-- Hero -->
+    <section class="pt-32 pb-20 lg:pt-48 lg:pb-32 relative overflow-hidden">
+        <div class="container mx-auto px-6 text-center relative z-10">
             <div class="max-w-4xl mx-auto">
-                <h1 class="text-5xl md:text-7xl font-bold mb-6 fade-in" style="animation-delay: 0.1s;" data-translate="title">
-                    Crafting <span class="gradient-text">Digital</span> Experiences
+                <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-6 fade-up">
+                    <span data-translate="heroTitle">Crafting</span> <span class="gradient-text" data-translate="heroTitleAccent">Digital Tools</span>
                 </h1>
-                <p class="text-xl md:text-2xl max-w-3xl mx-auto mb-8 fade-in" style="animation-delay: 0.3s;" data-translate="slogan">
-                    Innovative mobile solutions designed with passion and precision to elevate your daily life.
+                <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 fade-up delay-100" data-translate="heroSubtitle">
+                    Minimalist utilities designed for modern workflows. Clean, efficient, and meticulously crafted.
                 </p>
-                <div class="flex flex-wrap justify-center gap-4 fade-in" style="animation-delay: 0.5s;">
-                    <a href="#apps" class="inline-block bg-white text-indigo-600 font-semibold px-8 py-3 rounded-full shadow-lg hover:bg-gray-100 hover:shadow-xl transition duration-300 transform hover:-translate-y-1" data-translate="viewWorks">
-                        Explore Apps <i class="fas fa-arrow-down ml-2"></i>
+                <div class="flex justify-center gap-4 fade-up delay-200">
+                    <a href="#projects" class="btn-primary px-8 py-3 rounded-full font-medium text-white flex items-center gap-2">
+                        <span data-translate="exploreProjects">Explore Projects</span>
+                        <i data-lucide="arrow-down" class="w-4 h-4"></i>
                     </a>
-                    <a href="#contact" class="inline-block border-2 border-white text-white font-semibold px-8 py-3 rounded-full hover:bg-white hover:text-indigo-600 transition duration-300 transform hover:-translate-y-1" data-translate="contact">
-                        Get In Touch <i class="fas fa-paper-plane ml-2"></i>
+                    <a href="#contact" class="px-8 py-3 rounded-full font-medium border border-white/10 hover:bg-white/5 transition text-slate-300" data-translate="getInTouch">
+                        Get in Touch
                     </a>
                 </div>
             </div>
         </div>
-        
-        <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent opacity-10"></div>
-        
-        <div class="absolute -bottom-20 left-1/2 transform -translate-x-1/2 w-64 h-64 rounded-full bg-indigo-400 opacity-10 blur-3xl"></div>
     </section>
 
-    <section class="py-12 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
-                <div class="stats-item bg-gray-50 rounded-xl p-6 text-center border border-gray-100 hover:border-indigo-200">
-                    <div class="text-4xl font-bold text-indigo-600 mb-2">5+</div>
-                    <div class="text-gray-600 font-medium" data-translate="projects">Successful Projects</div>
-                </div>
-                <div class="stats-item bg-gray-50 rounded-xl p-6 text-center border border-gray-100 hover:border-indigo-200">
-                    <div class="text-4xl font-bold text-indigo-600 mb-2">1K+</div>
-                    <div class="text-gray-600 font-medium" data-translate="clients">Positive Reviews</div>
-                </div>
-                <div class="stats-item bg-gray-50 rounded-xl p-6 text-center border border-gray-100 hover:border-indigo-200">
-                    <div class="text-4xl font-bold text-indigo-600 mb-2">5+</div>
-                    <div class="text-gray-600 font-medium" data-translate="years">Years Experience</div>
-                </div>
-                <div class="stats-item bg-gray-50 rounded-xl p-6 text-center border border-gray-100 hover:border-indigo-200">
-                    <div class="text-4xl font-bold text-indigo-600 mb-2">100%</div>
-                    <div class="text-gray-600 font-medium" data-translate="passion">Passion Driven</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="apps" class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-4" data-translate="appsTitle">Featured <span class="gradient-text">Applications</span></h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto" data-translate="appsSubtitle">
-                    Innovative solutions designed to simplify and enhance your daily life
+    <!-- Projects -->
+    <section id="projects" class="py-20 relative">
+        <div class="container mx-auto px-6">
+            <div class="mb-16 text-center">
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 fade-up" data-translate="projectsTitle">Featured <span class="gradient-text">Works</span></h2>
+                <p class="text-slate-400 max-w-xl mx-auto fade-up delay-100" data-translate="projectsSubtitle">
+                    A curated selection of utilities built with precision and attention to detail.
                 </p>
             </div>
             
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <div class="app-card bg-white rounded-xl overflow-hidden shadow-md relative">
-                    <div class="h-56 bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center relative">
-                        <div class="absolute inset-0 bg-gradient-to-t from-blue-500 to-transparent opacity-10"></div>
-                        <i class="fas fa-exchange-alt app-icon text-7xl text-blue-600"></i>
-                        <div class="absolute bottom-4 right-4 bg-blue-600 text-white text-xs px-2 py-1 rounded-full" data-translate="popular">POPULAR</div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <!-- SwiftService -->
+                <div class="glass-card rounded-2xl p-6 glow group fade-up">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="settings" class="w-7 h-7 text-white"></i>
                     </div>
-                    <div class="p-6">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-3">Exolute Converter</h3>
-                        <p class="text-gray-600 mb-4" data-translate="exoluteDesc">
-                            Ultimate currency converter with real-time exchange rates and conversion history.
-                        </p>
-                        <div class="flex flex-wrap gap-2 mb-6">
-                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full" data-translate="finance">Finance</span>
-                            <span class="bg-green-100 text-green-800 text-xs px-3 py-1 rounded-full" data-translate="realTime">Real-time</span>
-                            <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full" data-translate="android">Android</span>
-                        </div>
-                        <a href="https://play.google.com/store/apps/details?id=com.saieesoft.exolute&pcampaignid=web_share" target="_blank" class="download-btn inline-block w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-6 rounded-lg">
-                            <i class="fas fa-download mr-2"></i> <span data-translate="download">Download on</span> Play Store
-                        </a>
+                    <div class="flex items-center gap-2 mb-3">
+                        <h3 class="text-xl font-bold">SwiftService</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" data-translate="newBadge">NEW</span>
                     </div>
+                    <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="swiftserviceDesc">
+                        Advanced Windows optimization suite. System cleaning, registry maintenance, and performance tuning in one lightweight utility.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagSystem">System</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagWindows">Windows</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagUtils">Utilities</span>
+                    </div>
+                    <a href="#" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
+                        <i data-lucide="download" class="w-4 h-4"></i>
+                        <span data-translate="downloadFor">Download for</span> Windows
+                    </a>
                 </div>
-                
-                <div class="app-card bg-white rounded-xl overflow-hidden shadow-md relative">
-                    <div class="h-56 bg-gradient-to-br from-purple-50 to-purple-100 flex items-center justify-center">
-                        <div class="absolute inset-0 bg-gradient-to-t from-purple-500 to-transparent opacity-10"></div>
-                        <i class="fas fa-tasks app-icon text-7xl text-purple-600"></i>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-3">Daily.box</h3>
-                        <p class="text-gray-600 mb-4" data-translate="dailyboxDesc">
-                            Your daily progress companion for building habits and achieving goals.
-                        </p>
-                        <div class="flex flex-wrap gap-2 mb-6">
-                            <span class="bg-purple-100 text-purple-800 text-xs px-3 py-1 rounded-full" data-translate="productivity">Productivity</span>
-                            <span class="bg-yellow-100 text-yellow-800 text-xs px-3 py-1 rounded-full" data-translate="habits">Habits</span>
-                            <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full" data-translate="android">Android</span>
-                        </div>
-                        <a href="https://www.mediafire.com/file/nq28f0amjgl3eop/Dailybox_v1.apk/file" class="download-btn inline-block w-full bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded-lg">
-                            <i class="fas fa-download mr-2"></i> <span data-translate="download">Download</span> (Beta)
-                        </a>
-                    </div>
-                </div>
-                
-                <div class="app-card bg-white rounded-xl overflow-hidden shadow-md relative">
-                    <div class="h-56 bg-gradient-to-br from-pink-50 to-pink-100 flex items-center justify-center">
-                        <div class="absolute inset-0 bg-gradient-to-t from-pink-500 to-transparent opacity-10"></div>
-                        <i class="fab fa-telegram app-icon text-7xl text-pink-600"></i>
-                    </div>
-                    <div class="p-6">
-                        <h3 class="text-2xl font-bold text-gray-800 mb-3">@AskAnonymousBot</h3>
-                        <p class="text-gray-600 mb-4" data-translate="askAnonymousDesc">
-                            Telegram bot for exchanging anonymous messages with friends and communities.
-                        </p>
-                        <div class="flex flex-wrap gap-2 mb-6">
-                            <span class="bg-pink-100 text-pink-800 text-xs px-3 py-1 rounded-full" data-translate="social">Social</span>
-                            <span class="bg-gray-100 text-gray-800 text-xs px-3 py-1 rounded-full" data-translate="telegram">Telegram</span>
-                            <span class="bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full" data-translate="privacy">Privacy</span>
-                        </div>
-                        <a href="https://t.me/AskAnonymousBot" target="_blank" class="download-btn inline-block w-full bg-pink-600 hover:bg-pink-700 text-white font-medium py-3 px-6 rounded-lg">
-                            <i class="fab fa-telegram mr-2"></i> <span data-translate="tryBot">Try the Bot</span>
-                        </a>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="text-center mt-16">
-                <a href="https://saieesoft.github.io/projects.html" class="inline-block border-2 border-indigo-600 text-indigo-600 font-semibold px-8 py-3 rounded-full hover:bg-indigo-600 hover:text-white transition duration-300 transform hover:-translate-y-1" data-translate="viewAll">
-                    View All Projects <i class="fas fa-arrow-right ml-2"></i>
-                </a>
-            </div>
-        </div>
-    </section>
 
-    <section id="about" class="py-20 bg-white">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col lg:flex-row items-center gap-12">
-                <div class="lg:w-1/2 relative">
-                    <div class="relative group">
-                        <div class="w-full h-full bg-indigo-100 rounded-2xl overflow-hidden transform transition-all duration-500 group-hover:shadow-2xl">
-                            <div class="h-96 bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center relative overflow-hidden">
-                                <div class="absolute inset-0 bg-gradient-to-t from-indigo-500 to-transparent opacity-10"></div>
-                                <i class="fas fa-user-tie text-9xl text-indigo-500 opacity-50 transform transition-transform duration-500 group-hover:scale-110"></i>
-                                <div class="absolute inset-0 bg-indigo-600 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
-                            </div>
-                        </div>
-                        <div class="absolute -bottom-6 -right-6 bg-indigo-600 text-white p-6 rounded-2xl shadow-xl transform transition-transform duration-300 hover:-translate-y-2">
-                            <div class="text-3xl font-bold">5+</div>
-                            <div class="text-sm" data-translate="yearsExp">Years Experience</div>
-                        </div>
+                <!-- Exolute Converter -->
+                <div class="glass-card rounded-2xl p-6 glow group fade-up delay-100">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="arrow-left-right" class="w-7 h-7 text-white"></i>
                     </div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <h3 class="text-xl font-bold">Exolute Converter</h3>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" data-translate="popularBadge">POPULAR</span>
+                    </div>
+                    <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="exoluteDesc">
+                        Real-time currency conversion with historical analytics, offline mode support, and intuitive interface design.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagFinance">Finance</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagAndroid">Android</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagOffline">Offline</span>
+                    </div>
+                    <a href="https://play.google.com/store/apps/details?id=com.saieesoft.exolute" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
+                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <span data-translate="viewOnStore">View on Play Store</span>
+                    </a>
                 </div>
-                
-                <div class="lg:w-1/2">
-                    <div class="mb-8">
-                        <h2 class="text-4xl font-bold text-gray-800 mb-6 relative inline-block" data-translate="aboutTitle">
-                            About <span class="gradient-text">Me</span>
-                            <span class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 to-emerald-400 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></span>
-                        </h2>
-                        <p class="text-gray-600 mb-6 text-lg leading-relaxed" data-translate="aboutText1">
-                            I'm a passionate mobile developer specializing in Android applications, with over 3 years of experience creating modern, intuitive apps. My focus is on delivering polished user experiences that combine functionality with beautiful design.
-                        </p>
-                        <p class="text-gray-600 mb-8 text-lg leading-relaxed" data-translate="aboutText2">
-                            Each application I build is carefully crafted with attention to performance, usability, and visual appeal. I take pride in solving real-world problems through technology while maintaining clean code architecture and following best practices.
-                        </p>
+
+                <!-- AskAnonymousBot -->
+                <div class="glass-card rounded-2xl p-6 glow group fade-up delay-200">
+                    <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                        <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
                     </div>
-                    
-                    <div class="mb-12">
-                        <h3 class="text-xl font-bold text-gray-800 mb-6 relative pb-2" data-translate="techStack">
-                            Technologies I Work With
-                            <span class="absolute bottom-0 left-0 w-16 h-1 bg-gradient-to-r from-indigo-500 to-emerald-400"></span>
-                        </h3>
-                        <div class="grid grid-cols-3 sm:grid-cols-6 gap-4">
-                            <div class="tech-icon bg-white p-4 rounded-xl shadow-md hover:shadow-lg border border-gray-100">
-                                <i class="fab fa-android text-4xl text-green-500"></i>
-                                <p class="text-xs text-gray-500 mt-2 text-center">Android</p>
-                            </div>
-                            <div class="tech-icon bg-white p-4 rounded-xl shadow-md hover:shadow-lg border border-gray-100">
-                                <i class="fab fa-java text-4xl text-red-500"></i>
-                                <p class="text-xs text-gray-500 mt-2 text-center">Java</p>
-                            </div>
-                            <div class="tech-icon bg-white p-4 rounded-xl shadow-md hover:shadow-lg border border-gray-100">
-                                <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/Kotlin_Icon.png" alt="Kotlin" class="w-10 h-10 mx-auto">
-                                <p class="text-xs text-gray-500 mt-2 text-center">Kotlin</p>
-                            </div>
-                            <div class="tech-icon bg-white p-4 rounded-xl shadow-md hover:shadow-lg border border-gray-100">
-                                <i class="fab fa-js text-4xl text-yellow-500"></i>
-                                <p class="text-xs text-gray-500 mt-2 text-center">JavaScript</p>
-                            </div>
-                            <div class="tech-icon bg-white p-4 rounded-xl shadow-md hover:shadow-lg border border-gray-100">
-                                <i class="fab fa-html5 text-4xl text-orange-500"></i>
-                                <p class="text-xs text-gray-500 mt-2 text-center">HTML5</p>
-                            </div>
-                            <div class="tech-icon bg-white p-4 rounded-xl shadow-md hover:shadow-lg border border-gray-100">
-                                <i class="fab fa-css3-alt text-4xl text-blue-500"></i>
-                                <p class="text-xs text-gray-500 mt-2 text-center">CSS3</p>
-                            </div>
-                            
-                        </div>
+                    <div class="flex items-center gap-2 mb-3">
+                        <h3 class="text-xl font-bold">@AskAnonymousBot</h3>
                     </div>
-                    
-                    <div class="flex flex-wrap gap-4">
-                        <a href="#contact" class="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition duration-300 transform hover:-translate-y-1" data-translate="contactMe">
-                            Contact Me <i class="fas fa-arrow-right ml-2"></i>
-                        </a>
-                        <a href="#apps" class="inline-flex items-center border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white font-semibold px-8 py-3 rounded-full transition duration-300 transform hover:-translate-y-1">
-                            View Projects <i class="fas fa-code ml-2"></i>
-                        </a>
+                    <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="askanonymousDesc">
+                        Telegram bot for anonymous messaging. End-to-end privacy, no data storage, and seamless group integration.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagSocial">Social</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagPrivacy">Privacy</span>
+                        <span class="tag text-xs px-3 py-1 rounded-full">Telegram</span>
                     </div>
+                    <a href="https://t.me/AskAnonymousBot" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        <span data-translate="openInTelegram">Open in Telegram</span>
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="py-20 bg-gray-50">
-        <div class="container mx-auto px-4">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-800 mb-4" data-translate="testimonials">What Users <span class="gradient-text">Say</span></h2>
-                <p class="text-xl text-gray-600 max-w-2xl mx-auto" data-translate="testimonialsSub">
-                    Feedback from people who use my applications
-                </p>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
-                    <div class="flex items-center mb-4">
-                        <div class="text-yellow-400 text-xl">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                    </div>
-                    <p class="text-gray-600 mb-6 italic" data-translate="testimonial1">
-                        "Exolute Converter has completely changed how I handle foreign currencies. The interface is so intuitive and the real-time rates are incredibly accurate."
-                    </p>
-                    <div class="flex items-center">
-                        <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
-                            <i class="fas fa-user text-indigo-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-gray-800">Alex M.</h4>
-                            <p class="text-sm text-gray-500" data-translate="user1">Frequent Traveler</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
-                    <div class="flex items-center mb-4">
-                        <div class="text-yellow-400 text-xl">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                        </div>
-                    </div>
-                    <p class="text-gray-600 mb-6 italic" data-translate="testimonial2">
-                        "Daily.box helped me establish a morning routine that increased my productivity by 40%. The simple interface makes habit tracking effortless."
-                    </p>
-                    <div class="flex items-center">
-                        <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
-                            <i class="fas fa-user text-indigo-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-gray-800">Sarah K.</h4>
-                            <p class="text-sm text-gray-500" data-translate="user2">Freelance Designer</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition duration-300">
-                    <div class="flex items-center mb-4">
-                        <div class="text-yellow-400 text-xl">
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star"></i>
-                            <i class="fas fa-star-half-alt"></i>
-                        </div>
-                    </div>
-                    <p class="text-gray-600 mb-6 italic" data-translate="testimonial3">
-                        "As a student, MemoryCards has been invaluable for exam preparation. The customization options allow me to create perfect study materials."
-                    </p>
-                    <div class="flex items-center">
-                        <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
-                            <i class="fas fa-user text-indigo-500"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-bold text-gray-800">David P.</h4>
-                            <p class="text-sm text-gray-500" data-translate="user3">University Student</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="contact" class="py-20 bg-gradient-to-br from-indigo-600 to-indigo-800 text-white">
-        <div class="container mx-auto px-4">
+    <!-- Contact -->
+    <section id="contact" class="py-20 relative">
+        <div class="container mx-auto px-6">
             <div class="max-w-4xl mx-auto">
-                <div class="text-center mb-16">
-                    <h2 class="text-4xl font-bold mb-4" data-translate="contactTitle">Get In <span class="gradient-text">Touch</span></h2>
-                    <p class="text-xl opacity-90 max-w-2xl mx-auto" data-translate="contactSub">
-                        Have a project in mind or want to collaborate? I'd love to hear from you!
-                    </p>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                    <div>
-                        <form id="contactForm" action="https://formsubmit.co/saieesoft@duck.com" method="POST" class="space-y-6">
+                <div class="glass-card rounded-3xl p-8 md:p-12 fade-up">
+                    <div class="grid md:grid-cols-2 gap-12">
+                        <div>
+                            <h2 class="text-3xl font-bold mb-4" data-translate="contactTitle">Let's <span class="gradient-text">Collaborate</span></h2>
+                            <p class="text-slate-400 mb-8" data-translate="contactSubtitle">
+                                Have a project in mind or want to discuss potential opportunities? Reach out directly.
+                            </p>
+                            
+                            <div class="space-y-4">
+                                <a href="mailto:saieesoft.dev@gmail.com" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
+                                    <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
+                                        <i data-lucide="mail" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="text-sm">saieesoft.dev@gmail.com</span>
+                                </a>
+                                <a href="https://github.com/saieesoft" target="_blank" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
+                                    <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
+                                        <i data-lucide="github" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="text-sm">github.com/saieesoft</span>
+                                </a>
+                                <a href="https://play.google.com/store/apps/dev?id=6446780682856756622" target="_blank" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
+                                    <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
+                                        <i data-lucide="smartphone" class="w-5 h-5"></i>
+                                    </div>
+                                    <span class="text-sm" data-translate="playStore">Play Store Developer</span>
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <form action="https://formsubmit.co/saieesoft.dev@gmail.com" method="POST" class="space-y-4">
                             <input type="hidden" name="_captcha" value="false">
-                            <input type="hidden" name="_next" value="https://yourdomain.com/thanks.html">
                             <div>
-                                <label for="name" class="block mb-2 font-medium" data-translate="yourName">Your Name</label>
-                                <input type="text" id="name" name="name" required class="contact-input w-full px-5 py-3 rounded-lg bg-white bg-opacity-10 focus:bg-opacity-20 focus:outline-none">
+                                <input type="text" name="name" placeholder="Name" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500">
                             </div>
                             <div>
-                                <label for="email" class="block mb-2 font-medium">Email</label>
-                                <input type="email" id="email" name="email" required class="contact-input w-full px-5 py-3 rounded-lg bg-white bg-opacity-10 focus:bg-opacity-20 focus:outline-none">
+                                <input type="email" name="email" placeholder="Email" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500">
                             </div>
                             <div>
-                                <label for="message" class="block mb-2 font-medium" data-translate="message">Message</label>
-                                <textarea id="message" name="message" rows="5" required class="contact-input w-full px-5 py-3 rounded-lg bg-white bg-opacity-10 focus:bg-opacity-20 focus:outline-none"></textarea>
+                                <textarea name="message" placeholder="Message" rows="4" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 resize-none"></textarea>
                             </div>
-                            <button type="submit" class="w-full bg-white text-indigo-600 hover:bg-gray-100 font-semibold py-4 px-6 rounded-lg transition duration-300 transform hover:-translate-y-1">
-                                <span data-translate="sendMessage">Send Message</span> <i class="fas fa-paper-plane ml-2"></i>
+                            <button type="submit" class="btn-primary w-full py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2">
+                                <span data-translate="sendMessage">Send Message</span>
+                                <i data-lucide="send" class="w-4 h-4"></i>
                             </button>
                         </form>
                     </div>
-                    
-                    <div class="flex flex-col justify-center">
-                        <div class="bg-white bg-opacity-10 rounded-xl p-8 backdrop-blur-sm">
-                            <h3 class="text-xl font-bold mb-6" data-translate="contactInfo">Contact Information</h3>
-                            <div class="space-y-4">
-                                <div class="flex items-start">
-                                    <div class="text-indigo-300 text-xl mt-1 mr-4">
-                                        <i class="fas fa-envelope"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-medium" data-translate="emailTitle">Email</h4>
-                                        <p class="opacity-90">saieesoft@duck.com</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-start">
-                                    <div class="text-indigo-300 text-xl mt-1 mr-4">
-                                        <i class="fab fa-github"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-medium">GitHub</h4>
-                                        <p class="opacity-90">github.com/saieesoft</p>
-                                    </div>
-                                </div>
-                                <div class="flex items-start">
-                                    <div class="text-indigo-300 text-xl mt-1 mr-4">
-                                        <i class="fab fa-google-play"></i>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-medium">Play Store</h4>
-                                        <p class="opacity-90" data-translate="devPage">play.google.com/store/apps/dev?id=6446780682856756622</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="bg-gray-900 text-white py-12">
-        <div class="container mx-auto px-4">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-8 md:mb-0">
-                    <div class="flex items-center space-x-3 mb-4">
-                        <div class="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center">
-                            <i class="fas fa-code text-white"></i>
-                        </div>
-                        <h2 class="text-2xl font-bold">Saiee<span class="text-indigo-400">Soft</span></h2>
-                    </div>
-                    <p class="text-gray-400 max-w-md" data-translate="footerText">
-                        Creating innovative digital solutions that make life easier and more productive.
-                    </p>
-                </div>
-                
-                <div class="flex space-x-6 mb-8 md:mb-0">
-                    <a href="https://github.com/saieesoft" class="social-icon text-gray-400 hover:text-white text-2xl">
-                        <i class="fab fa-github"></i>
-                    </a>
-                    <a href="https://play.google.com/store/apps/dev?id=6446780682856756622" class="social-icon text-gray-400 hover:text-white text-2xl">
-                        <i class="fab fa-google-play"></i>
-                    </a>
-                    <a href="mailto:saieesoft@duck.com" class="social-icon text-gray-400 hover:text-white text-2xl">
-                        <i class="fas fa-envelope"></i>
-                    </a>
-                </div>
-                
-                <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-white transition" data-translate="home">Home</a>
-                    <a href="#apps" class="text-gray-400 hover:text-white transition" data-translate="apps">Apps</a>
-                    <a href="#about" class="text-gray-400 hover:text-white transition" data-translate="about">About</a>
-                    <a href="#contact" class="text-gray-400 hover:text-white transition" data-translate="contact">Contact</a>
-                </div>
-            </div>
-            
-            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-400">
-                <p data-translate="copyright">&copy; 2026 SaieeSoft. All rights reserved.</p>
+    <!-- Footer -->
+    <footer class="py-8 border-t border-white/10 mt-20">
+        <div class="container mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <p class="text-slate-500 text-sm" data-translate="copyright">© 2026 SaieeSoft. All rights reserved.</p>
+            <div class="flex gap-6">
+                <a href="#" class="text-slate-500 hover:text-white transition text-sm" data-translate="projects">Projects</a>
+                <a href="#contact" class="text-slate-500 hover:text-white transition text-sm" data-translate="contact">Contact</a>
             </div>
         </div>
     </footer>
 
     <script>
+        // Translations
         const translations = {
             en: {
-                "home": "Home",
-                "apps": "My Apps",
-                "about": "About Me",
-                "contact": "Contact",
-                "toggleTheme": "Change Theme",
-                "title": "Crafting Digital Experiences",
-                "slogan": "Innovative mobile solutions designed with passion and precision to elevate your daily life.",
-                "viewWorks": "Explore Apps",
-                "projects": "Successful Projects",
-                "clients": "Positive Reviews",
-                "years": "Years Experience",
-                "passion": "Passion Driven",
-                "appsTitle": "Featured Applications",
-                "appsSubtitle": "Innovative solutions designed to simplify and enhance your daily life",
-                "exoluteDesc": "Ultimate currency converter with real-time exchange rates and conversion history.",
-                "dailyboxDesc": "Your daily progress companion for building habits and achieving goals.",
-                "askAnonymousDesc": "Telegram bot for exchanging anonymous messages with friends and communities.",
-                "social": "Social",
-                "telegram": "Telegram",
-                "privacy": "Privacy",
-                "tryBot": "Try the Bot",
-                "finance": "Finance",
-                "productivity": "Productivity",
-                "education": "Education",
-                "android": "Android",
-                "download": "Download",
-                "popular": "POPULAR",
-                "realTime": "Real-time",
-                "habits": "Habits",
-                "learning": "Learning",
-                "viewAll": "View All Projects",
-                "aboutTitle": "About Me",
-                "aboutText1": "I'm a passionate full-stack developer with over 2 years of experience creating modern, intuitive applications. My mission is to bridge the gap between complex technology and seamless user experiences.",
-                "aboutText2": "Every app I develop is crafted with attention to detail, performance, and aesthetics. I believe in creating solutions that not only solve problems but also delight users with their simplicity and elegance.",
-                "techStack": "Technologies I Work With",
-                "contactMe": "Contact Me",
-                "yearsExp": "Years Experience",
-                "testimonials": "What Users Say",
-                "testimonialsSub": "Feedback from people who use my applications",
-                "testimonial1": "\"Exolute Converter has completely changed how I handle foreign currencies. The interface is so intuitive and the real-time rates are incredibly accurate.\"",
-                "testimonial2": "\"Daily.box helped me establish a morning routine that increased my productivity by 40%. The simple interface makes habit tracking effortless.\"",
-                "testimonial3": "\"As a student, MemoryCards has been invaluable for exam preparation. The customization options allow me to create perfect study materials.\"",
-                "user1": "Frequent Traveler",
-                "user2": "Freelance Designer",
-                "user3": "University Student",
-                "contactTitle": "Get In Touch",
-                "contactSub": "Have a project in mind or want to collaborate? I'd love to hear from you!",
-                "yourName": "Your Name",
-                "message": "Message",
-                "sendMessage": "Send Message",
-                "contactInfo": "Contact Information",
-                "emailTitle": "Email",
-                "devPage": "https://play.google.com/store/apps/dev?id=6446780682856756622",
-                "footerText": "Creating innovative digital solutions that make life easier and more productive.",
-                "copyright": "© 2026 SaieeSoft. All rights reserved."
+                projects: "Projects",
+                contact: "Contact",
+                heroTitle: "Crafting",
+                heroTitleAccent: "Digital Tools",
+                heroSubtitle: "Minimalist utilities designed for modern workflows. Clean, efficient, and meticulously crafted.",
+                exploreProjects: "Explore Projects",
+                getInTouch: "Get in Touch",
+                projectsTitle: "Featured",
+                projectsSubtitle: "A curated selection of utilities built with precision and attention to detail.",
+                newBadge: "NEW",
+                popularBadge: "POPULAR",
+                swiftserviceDesc: "Advanced Windows optimization suite. System cleaning, registry maintenance, and performance tuning in one lightweight utility.",
+                exoluteDesc: "Real-time currency conversion with historical analytics, offline mode support, and intuitive interface design.",
+                askanonymousDesc: "Telegram bot for anonymous messaging. End-to-end privacy, no data storage, and seamless group integration.",
+                tagSystem: "System",
+                tagWindows: "Windows",
+                tagUtils: "Utilities",
+                tagFinance: "Finance",
+                tagAndroid: "Android",
+                tagOffline: "Offline",
+                tagSocial: "Social",
+                tagPrivacy: "Privacy",
+                downloadFor: "Download for",
+                viewOnStore: "View on Play Store",
+                openInTelegram: "Open in Telegram",
+                contactTitle: "Let's",
+                contactSubtitle: "Have a project in mind or want to discuss potential opportunities? Reach out directly.",
+                playStore: "Play Store Developer",
+                sendMessage: "Send Message",
+                copyright: "© 2026 SaieeSoft. All rights reserved."
             },
             ru: {
-                "home": "Главная",
-                "apps": "Мои приложения",
-                "about": "Обо мне",
-                "contact": "Контакты",
-                "toggleTheme": "Сменить тему",
-                "title": "Создаем цифровые решения",
-                "slogan": "Инновационные мобильные приложения, разработанные с страстью и точностью для улучшения вашей повседневной жизни.",
-                "viewWorks": "Смотреть приложения",
-                "projects": "Успешных проектов",
-                "clients": "Положительных отзывов",
-                "years": "Года опыта",
-                "passion": "Страсть к делу",
-                "appsTitle": "Наши приложения",
-                "appsSubtitle": "Инновационные решения, созданные для упрощения и улучшения вашей повседневной жизни",
-                "exoluteDesc": "Мощный конвертер валют с актуальными курсами и историей конвертаций.",
-                "dailyboxDesc": "Ваш ежедневный помощник для формирования привычек и достижения целей.",
-                "askAnonymousDesc": "Телеграм бот для обмена анонимными сообщениями с друзьями и сообществами.",
-                "social": "Социальное",
-                "telegram": "Telegram",
-                "privacy": "Конфиденциальность",
-                "tryBot": "Попробовать бота",
-                "finance": "Финансы",
-                "productivity": "Продуктивность",
-                "education": "Образование",
-                "android": "Android",
-                "download": "Скачать",
-                "popular": "ПОПУЛЯРНО",
-                "realTime": "Реальное время",
-                "habits": "Привычки",
-                "learning": "Обучение",
-                "viewAll": "Все проекты",
-                "aboutTitle": "Обо мне",
-                "aboutText1": "Я страстный full-stack разработчик с более чем 2-летним опытом создания современных, интуитивно понятных приложений. Моя миссия - соединить сложные технологии с бесшовным пользовательским опытом.",
-                "aboutText2": "Каждое приложение, которое я разрабатываю, создается с вниманием к деталям, производительности и эстетике. Я верю в создание решений, которые не только решают проблемы, но и радуют пользователей своей простотой и элегантностью.",
-                "techStack": "Технологии, с которыми я работаю",
-                "contactMe": "Связаться со мной",
-                "yearsExp": "Года опыта",
-                "testimonials": "Отзывы пользователей",
-                "testimonialsSub": "Мнения людей, которые используют мои приложения",
-                "testimonial1": "\"Exolute Converter полностью изменил мой подход к иностранным валютам. Интерфейс настолько интуитивен, а курсы в реальном времени невероятно точны.\"",
-                "testimonial2": "\"Daily.box помог мне установить утренний режим, который увеличил мою продуктивность на 40%. Простой интерфейс делает отслеживание привычек легким.\"",
-                "testimonial3": "\"Как студенту, MemoryCards был бесценен для подготовки к экзаменам. Возможности настройки позволяют создавать идеальные учебные материалы.\"",
-                "user1": "Частый путешественник",
-                "user2": "Фриланс-дизайнер",
-                "user3": "Студент университета",
-                "contactTitle": "Свяжитесь со мной",
-                "contactSub": "Есть проект или хотите сотрудничать? Буду рад услышать от вас!",
-                "yourName": "Ваше имя",
-                "message": "Сообщение",
-                "sendMessage": "Отправить сообщение",
-                "contactInfo": "Контактная информация",
-                "emailTitle": "Email",
-                "devPage": "Страница разработчика",
-                "footerText": "Создаем инновационные цифровые решения, которые делают жизнь проще и продуктивнее.",
-                "copyright": "© 2026 SaieeSoft. Все права защищены."
+                projects: "Проекты",
+                contact: "Контакты",
+                heroTitle: "Создаем",
+                heroTitleAccent: "Цифровые Инструменты",
+                heroSubtitle: "Минималистичные утилиты для современных задач. Чистые, эффективные и тщательно продуманные.",
+                exploreProjects: "Смотреть проекты",
+                getInTouch: "Связаться",
+                projectsTitle: "Избранные",
+                projectsSubtitle: "Подборка утилит, созданных с точностью и вниманием к деталям.",
+                newBadge: "НОВИНКА",
+                popularBadge: "ПОПУЛЯРНО",
+                swiftserviceDesc: "Продвинутый набор для оптимизации Windows. Очистка системы, работа с реестром и настройка производительности в одной легкой утилите.",
+                exoluteDesc: "Конвертация валют в реальном времени с исторической аналитикой, поддержкой офлайн-режима и интуитивным дизайном.",
+                askanonymousDesc: "Telegram-бот для анонимных сообщений. Приватность без компромиссов, без хранения данных и бесшовная интеграция в группы.",
+                tagSystem: "Система",
+                tagWindows: "Windows",
+                tagUtils: "Утилиты",
+                tagFinance: "Финансы",
+                tagAndroid: "Android",
+                tagOffline: "Офлайн",
+                tagSocial: "Социальное",
+                tagPrivacy: "Приватность",
+                downloadFor: "Скачать для",
+                viewOnStore: "Смотреть в Play Store",
+                openInTelegram: "Открыть в Telegram",
+                contactTitle: "Давайте",
+                contactSubtitle: "Есть идея проекта или хотите обсудить сотрудничество? Свяжитесь напрямую.",
+                playStore: "Разработчик Play Store",
+                sendMessage: "Отправить",
+                copyright: "© 2026 SaieeSoft. Все права защищены."
             },
             ua: {
-                "home": "Головна",
-                "apps": "Мої додатки",
-                "about": "Про мене",
-                "contact": "Контакти",
-                "toggleTheme": "Змінити тему",
-                "title": "Створюємо цифрові рішення",
-                "slogan": "Інноваційні мобільні програми, розроблені з пристрастю та точністю для покращення вашого повсякденного життя.",
-                "viewWorks": "Переглянути додатки",
-                "projects": "Успішних проектів",
-                "clients": "Позитивних відгуків",
-                "years": "Роки досвіду",
-                "passion": "Пристрасть до справи",
-                "appsTitle": "Наші додатки",
-                "appsSubtitle": "Інноваційні рішення, створені для спрощення та покращення вашого повсякденного життя",
-                "exoluteDesc": "Потужний конвертер валют з актуальними курсами та історією конвертацій.",
-                "dailyboxDesc": "Ваш щоденний помічник для формування звичок та досягнення цілей.",
-                "askAnonymousDesc": "Телеграм бот для обміну анонімними повідомленнями з друзями та спільнотами.",
-                "social": "Соціальне",
-                "telegram": "Telegram",
-                "privacy": "Конфіденційність",
-                "tryBot": "Спробувати бота",
-                "finance": "Фінансы",
-                "productivity": "Продуктивність",
-                "education": "Освіта",
-                "android": "Android",
-                "download": "Завантажити",
-                "popular": "ПОПУЛЯРНО",
-                "realTime": "Реальний час",
-                "habits": "Звички",
-                "learning": "Навчання",
-                "viewAll": "Всі проекти",
-                "aboutTitle": "Про мене",
-                "aboutText1": "Я пристрасний full-stack розробник з більш ніж 2-річним досвідом створення сучасних, інтуїтивно зрозумілих додатків. Моя місія - поєднати складні технології з безшовним користувацьким досвідом.",
-                "aboutText2": "Кожен додаток, який я розробляю, створюється з увагою до деталей, продуктивності та естетики. Я вірю в створення рішень, які не лише вирішують проблеми, але й радують користувачів своєю простотою та елегантністю.",
-                "techStack": "Технології, з якими я працюю",
-                "contactMe": "Зв'язатися зі мною",
-                "yearsExp": "Роки досвіду",
-                "testimonials": "Відгуки користувачів",
-                "testimonialsSub": "Думки людей, які використовують мої додатки",
-                "testimonial1": "\"Exolute Converter повністю змінив мій підхід до іноземних валют. Інтерфейс настільки інтуїтивний, а курси в реальному часі неймовірно точні.\"",
-                "testimonial2": "\"Daily.box допоміг мені встановити ранковий режим, який збільшив мою продуктивність на 40%. Простий інтерфейс робить відстеження звичок легким.\"",
-                "testimonial3": "\"Як студенту, MemoryCards був безцінним для підготовки до іспитів. Можливості налаштування дозволяють створювати ідеальні навчальні матеріали.\"",
-                "user1": "Частий мандрівник",
-                "user2": "Фріланс-дизайнер",
-                "user3": "Студент університету",
-                "contactTitle": "Зв'яжіться зі мною",
-                "contactSub": "Маєте проект або хочете співпрацювати? Буду радий почути від вас!",
-                "yourName": "Ваше ім'я",
-                "message": "Повідомлення",
-                "sendMessage": "Надіслати повідомлення",
-                "contactInfo": "Контактна інформація",
-                "emailTitle": "Email",
-                "devPage": "https://play.google.com/store/apps/dev?id=6446780682856756622",
-                "footerText": "Створюємо інноваційні цифрові рішення, які роблять життя простішим і продуктивнішим.",
-                "copyright": "© 2026 SaieeSoft. Всі права захищені."
+                projects: "Проєкти",
+                contact: "Контакти",
+                heroTitle: "Створюємо",
+                heroTitleAccent: "Цифрові Інструменти",
+                heroSubtitle: "Мінімалістичні утиліти для сучасних задач. Чисті, ефективні та ретельно продумані.",
+                exploreProjects: "Дивитись проєкти",
+                getInTouch: "Зв'язатись",
+                projectsTitle: "Вибрані",
+                projectsSubtitle: "Підбірка утиліт, створених з точністю та увагою до деталей.",
+                newBadge: "НОВЕ",
+                popularBadge: "ПОПУЛЯРНЕ",
+                swiftserviceDesc: "Просунутий набір для оптимізації Windows. Очищення системи, робота з реєстром та налаштування продуктивності в одній легкій утиліті.",
+                exoluteDesc: "Конвертація валют у реальному часі з історичною аналітикою, підтримкою офлайн-режиму та інтуїтивним дизайном.",
+                askanonymousDesc: "Telegram-бот для анонімних повідомлень. Приватність без компромісів, без зберігання даних та безшовна інтеграція в групи.",
+                tagSystem: "Система",
+                tagWindows: "Windows",
+                tagUtils: "Утиліти",
+                tagFinance: "Фінанси",
+                tagAndroid: "Android",
+                tagOffline: "Офлайн",
+                tagSocial: "Соціальне",
+                tagPrivacy: "Конфіденційність",
+                downloadFor: "Завантажити для",
+                viewOnStore: "Дивитись у Play Store",
+                openInTelegram: "Відкрити в Telegram",
+                contactTitle: "Давайте",
+                contactSubtitle: "Є ідея проєкту або хочете обговорити співпрацю? Зв'яжіться напряму.",
+                playStore: "Розробник Play Store",
+                sendMessage: "Надіслати",
+                copyright: "© 2026 SaieeSoft. Всі права захищені."
+            },
+            pl: {
+                projects: "Projekty",
+                contact: "Kontakt",
+                heroTitle: "Tworzymy",
+                heroTitleAccent: "Cyfrowe Narzędzia",
+                heroSubtitle: "Minimalistyczne narzędzia dla nowoczesnych zadań. Czyste, wydajne i starannie dopracowane.",
+                exploreProjects: "Przeglądaj projekty",
+                getInTouch: "Kontakt",
+                projectsTitle: "Wyróżnione",
+                projectsSubtitle: "Wyselekcjonowany zestaw narzędzi zbudowanych z precyzją i dbałością o szczegóły.",
+                newBadge: "NOWOŚĆ",
+                popularBadge: "POPULARNE",
+                swiftserviceDesc: "Zaawansowany zestaw optymalizacji Windows. Czyszczenie systemu, konserwacja rejestru i dostrajanie wydajności w jednym lekkim narzędziu.",
+                exoluteDesc: "Konwersja walut w czasie rzeczywistym z analizą historyczną, obsługą trybu offline i intuicyjnym projektem.",
+                askanonymousDesc: "Bot Telegram do anonimowych wiadomości. Prywatność bez kompromisów, brak przechowywania danych i płynna integracja z grupami.",
+                tagSystem: "System",
+                tagWindows: "Windows",
+                tagUtils: "Narzędzia",
+                tagFinance: "Finanse",
+                tagAndroid: "Android",
+                tagOffline: "Offline",
+                tagSocial: "Społeczność",
+                tagPrivacy: "Prywatność",
+                downloadFor: "Pobierz dla",
+                viewOnStore: "Zobacz w Play Store",
+                openInTelegram: "Otwórz w Telegramie",
+                contactTitle: "Współpracujmy",
+                contactSubtitle: "Masz pomysł na projekt lub chcesz omówić potencjalną współpracę? Skontaktuj się bezpośrednio.",
+                playStore: "Deweloper Play Store",
+                sendMessage: "Wyślij",
+                copyright: "© 2026 SaieeSoft. Wszelkie prawa zastrzeżone."
             }
         };
 
-        let currentLang = 'en';
-        const langButtons = document.querySelectorAll('.lang-btn');
+        // Auto-detect language
+        function detectLanguage() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            const shortLang = browserLang.split('-')[0];
+            const available = ['en', 'ru', 'ua', 'pl'];
+            
+            if (available.includes(shortLang)) {
+                return shortLang;
+            }
+            
+            // Fallback mappings
+            if (shortLang === 'uk') return 'ua';
+            if (shortLang === 'be' || shortLang === 'kk' || shortLang === 'ky') return 'ru';
+            
+            return 'en';
+        }
 
-        document.getElementById('mobileMenuButton').addEventListener('click', function() {
-            document.getElementById('mobileMenu').classList.toggle('open');
-        });
+        let currentLang = detectLanguage();
 
-        const setLanguage = (lang) => {
+        function setLanguage(lang) {
             currentLang = lang;
             document.documentElement.lang = lang;
+            
+            // Update all translatable elements
             document.querySelectorAll('[data-translate]').forEach(el => {
                 const key = el.getAttribute('data-translate');
                 if (translations[lang] && translations[lang][key]) {
-                    el.innerHTML = translations[lang][key];
+                    el.textContent = translations[lang][key];
                 }
             });
-             langButtons.forEach(b => {
-                b.classList.remove('bg-indigo-700');
-                if(b.getAttribute('data-lang') === lang) {
-                    b.classList.add('bg-indigo-700');
-                }
-            });
-        };
-
-        langButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                setLanguage(this.getAttribute('data-lang'));
-            });
-        });
-
-        const themeToggleButtons = document.querySelectorAll('#theme-toggle, #theme-toggle-mobile');
-        const body = document.body;
-
-        const applyTheme = (theme) => {
-            if (theme === 'dark') {
-                body.classList.add('dark');
-            } else {
-                body.classList.remove('dark');
-            }
-        };
-
-        const toggleTheme = () => {
-            const newTheme = body.classList.contains('dark') ? 'light' : 'dark';
-            localStorage.setItem('saieesoft-theme', newTheme);
-            applyTheme(newTheme);
-        };
-
-        themeToggleButtons.forEach(btn => {
-            btn.addEventListener('click', toggleTheme);
-        });
-
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const form = e.target;
-            const formData = new FormData(form);
             
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Sending...';
-            submitBtn.disabled = true;
-            
-            fetch(form.action, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    const successMsg = document.createElement('div');
-                    successMsg.className = 'mt-4 p-4 bg-green-100 text-green-700 rounded-lg';
-                    successMsg.innerHTML = '<i class="fas fa-check-circle mr-2"></i> Message sent successfully!';
-                    form.appendChild(successMsg);
-                    
-                    form.reset();
-                    
-                    setTimeout(() => {
-                        successMsg.remove();
-                    }, 5000);
+            // Update buttons state
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                if (btn.getAttribute('data-lang') === lang) {
+                    btn.classList.add('text-white', 'bg-white/10');
+                    btn.classList.remove('opacity-60');
                 } else {
-                    throw new Error('Network response was not ok');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                const errorMsg = document.createElement('div');
-                errorMsg.className = 'mt-4 p-4 bg-red-100 text-red-700 rounded-lg';
-                errorMsg.innerHTML = '<i class="fas fa-exclamation-circle mr-2"></i> There was a problem sending your message. Please try again later.';
-                form.appendChild(errorMsg);
-                
-                setTimeout(() => {
-                    errorMsg.remove();
-                }, 5000);
-            })
-            .finally(() => {
-                submitBtn.innerHTML = originalBtnText;
-                submitBtn.disabled = false;
-            });
-        });
-
-        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                const targetId = this.getAttribute('href');
-                const targetElement = document.querySelector(targetId);
-                
-                if (targetElement) {
-                    document.getElementById('mobileMenu').classList.remove('open');
-                    
-                    targetElement.scrollIntoView({
-                        behavior: 'smooth'
-                    });
+                    btn.classList.remove('text-white', 'bg-white/10');
+                    btn.classList.add('opacity-60');
                 }
             });
-        });
+            
+            localStorage.setItem('saieesoft-lang', lang);
+        }
 
-        const observerOptions = {
-            threshold: 0.1
-        };
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('saieesoft-theme', isDark ? 'dark' : 'light');
+        }
 
-        const observer = new IntersectionObserver((entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('animate-fadeIn');
-                    observer.unobserve(entry.target);
-                }
-            });
-        }, observerOptions);
-
-        document.querySelectorAll('.fade-in').forEach(el => {
-            observer.observe(el);
-        });
-        
-        const scrollToTopBtn = document.createElement('button');
-        scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
-        scrollToTopBtn.className = 'fixed bottom-8 right-8 w-12 h-12 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 opacity-0 invisible transform translate-y-4 z-50';
-        scrollToTopBtn.style.transition = 'all 0.3s ease';
-        document.body.appendChild(scrollToTopBtn);
-
-        scrollToTopBtn.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
-
-        window.addEventListener('scroll', () => {
-            if (window.pageYOffset > 300) {
-                scrollToTopBtn.classList.remove('opacity-0', 'invisible', 'translate-y-4');
-                scrollToTopBtn.classList.add('opacity-100', 'visible', 'translate-y-0');
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('menuIcon');
+            menu.classList.toggle('open');
+            
+            if (menu.classList.contains('open')) {
+                icon.setAttribute('data-lucide', 'x');
             } else {
-                scrollToTopBtn.classList.remove('opacity-100', 'visible', 'translate-y-0');
-                scrollToTopBtn.classList.add('opacity-0', 'invisible', 'translate-y-4');
+                icon.setAttribute('data-lucide', 'menu');
             }
-        });
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            setLanguage('en');
+            lucide.createIcons();
+        }
 
-            const savedTheme = localStorage.getItem('saieesoft-theme') || 'dark';
-            applyTheme(savedTheme);
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check for saved language or use detected
+            const savedLang = localStorage.getItem('saieesoft-lang');
+            if (savedLang && translations[savedLang]) {
+                setLanguage(savedLang);
+            } else {
+                setLanguage(detectLanguage());
+            }
             
-            const fadeElements = document.querySelectorAll('.fade-in');
+            // Check for saved theme
+            const savedTheme = localStorage.getItem('saieesoft-theme');
+            if (savedTheme === 'light') {
+                document.documentElement.classList.remove('dark');
+            } else {
+                document.documentElement.classList.add('dark');
+            }
             
-            fadeElements.forEach((el, index) => {
-                setTimeout(() => {
-                    el.style.opacity = 1;
-                    el.style.transform = 'translateY(0)';
-                }, index * 200);
+            // Initialize Lucide icons
+            lucide.createIcons();
+            
+            // Initialize intersection observer for animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                    }
+                });
+            });
+            
+            document.querySelectorAll('.fade-up').forEach(el => {
+                observer.observe(el);
+            });
+        });
+
+        // Smooth scroll
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Close mobile menu if open
+                    document.getElementById('mobileMenu').classList.remove('open');
+                    lucide.createIcons();
+                }
             });
         });
     </script>
