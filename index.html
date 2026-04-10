@@ -3,46 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Отключение Dark Reader / принудительных цветовых схем -->
     <meta name="darkreader" content="dark">
     <meta name="color-scheme" content="dark light">
-    
     <title>SaieeSoft | Digital Utilities</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="saieesoft_logo.png">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
+            --bg-primary: #0a0f1e;
+            --bg-secondary: #111827;
             --accent: #6366f1;
             --accent-hover: #4f46e5;
-            --text-primary: #f8fafc;
+            --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
+            --glass: rgba(255, 255, 255, 0.04);
+            --border: rgba(255, 255, 255, 0.08);
         }
-        
-        * {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-        
+
+        * { box-sizing: border-box; }
+
         body {
             background-color: var(--bg-primary);
             color: var(--text-primary);
             overflow-x: hidden;
+            font-family: 'DM Sans', sans-serif;
         }
-        
+
+        h1, h2, h3, h4, .font-display {
+            font-family: 'Syne', sans-serif;
+        }
+
         .gradient-text {
             background: linear-gradient(135deg, #818cf8 0%, #c084fc 50%, #38bdf8 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-        
+
         .glass-card {
             background: var(--glass);
             backdrop-filter: blur(20px);
@@ -50,24 +52,25 @@
             border: 1px solid var(--border);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        
+
         .glass-card:hover {
             transform: translateY(-8px);
             border-color: rgba(99, 102, 241, 0.3);
             box-shadow: 0 20px 40px -15px rgba(99, 102, 241, 0.2);
         }
-        
+
+        .project-card {
+            cursor: pointer;
+        }
+
         .glow {
             position: relative;
         }
-        
+
         .glow::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
             background: linear-gradient(45deg, #6366f1, #8b5cf6, #06b6d4);
             border-radius: inherit;
             opacity: 0;
@@ -75,125 +78,416 @@
             transition: opacity 0.3s ease;
             filter: blur(20px);
         }
-        
-        .glow:hover::before {
-            opacity: 0.4;
-        }
-        
+
+        .glow:hover::before { opacity: 0.4; }
+
         .nav-link {
             position: relative;
             color: var(--text-secondary);
             transition: color 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
         }
-        
-        .nav-link:hover {
-            color: var(--text-primary);
-        }
-        
+
+        .nav-link:hover { color: var(--text-primary); }
+
         .nav-link::after {
             content: '';
             position: absolute;
-            width: 0;
-            height: 1px;
-            bottom: -4px;
-            left: 0;
+            width: 0; height: 1px;
+            bottom: -4px; left: 0;
             background: linear-gradient(90deg, #6366f1, #8b5cf6);
             transition: width 0.3s ease;
         }
-        
-        .nav-link:hover::after {
-            width: 100%;
-        }
-        
+
+        .nav-link:hover::after { width: 100%; }
+
         .input-field {
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border);
             transition: all 0.3s ease;
+            font-family: 'DM Sans', sans-serif;
         }
-        
+
         .input-field:focus {
             outline: none;
             border-color: rgba(99, 102, 241, 0.5);
             background: rgba(255, 255, 255, 0.05);
         }
-        
+
         .noise {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             pointer-events: none;
             z-index: -1;
             opacity: 0.03;
             background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
         }
-        
+
         .orb {
             position: absolute;
             border-radius: 50%;
             filter: blur(80px);
-            opacity: 0.15;
+            opacity: 0.12;
             animation: float 20s infinite ease-in-out;
         }
-        
+
         @keyframes float {
             0%, 100% { transform: translate(0, 0); }
             33% { transform: translate(30px, -50px); }
             66% { transform: translate(-20px, 20px); }
         }
-        
+
         .fade-up {
             opacity: 0;
             transform: translateY(30px);
             animation: fadeUp 0.8s ease forwards;
         }
-        
+
         @keyframes fadeUp {
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            to { opacity: 1; transform: translateY(0); }
         }
-        
+
         .delay-100 { animation-delay: 0.1s; }
         .delay-200 { animation-delay: 0.2s; }
         .delay-300 { animation-delay: 0.3s; }
-        
+
         .tag {
             background: rgba(99, 102, 241, 0.1);
             color: #818cf8;
             border: 1px solid rgba(99, 102, 241, 0.2);
+            font-family: 'DM Sans', sans-serif;
         }
-        
+
         .btn-primary {
             background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
             transition: all 0.3s ease;
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
         }
-        
+
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 30px -10px rgba(99, 102, 241, 0.5);
         }
-        
+
         .mobile-menu {
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.4s ease;
         }
-        
-        .mobile-menu.open {
-            max-height: 400px;
+
+        .mobile-menu.open { max-height: 400px; }
+
+        .lang-dropdown {
+            position: relative;
+        }
+
+        .lang-dropdown-menu {
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            background: #141c2e;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 6px;
+            min-width: 140px;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-8px);
+            transition: all 0.2s ease;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+        }
+
+        .lang-dropdown-menu.open {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0);
+        }
+
+        .lang-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .lang-option:hover {
+            background: rgba(255,255,255,0.06);
+            color: var(--text-primary);
+        }
+
+        .lang-option.active {
+            background: rgba(99, 102, 241, 0.15);
+            color: #818cf8;
+        }
+
+        .lang-btn-trigger {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.03);
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-family: 'DM Sans', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .lang-btn-trigger:hover {
+            background: rgba(255,255,255,0.07);
+            color: var(--text-primary);
+            border-color: rgba(255,255,255,0.15);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .modal-content {
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(145deg, #0f1a2e, #141c30);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 28px;
+            width: 100%;
+            max-width: 880px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.93) translateY(20px);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 40px 80px -20px rgba(0,0,0,0.8), 0 0 0 1px rgba(99,102,241,0.1);
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-content::-webkit-scrollbar { width: 4px; }
+        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+        .slider-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 16px;
+            background: rgba(0,0,0,0.3);
+            aspect-ratio: 16/10;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+            transform: translateX(40px);
+        }
+
+        .slide.active {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .slide.prev {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+
+        .slide img, .slide .slide-placeholder {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 16px;
+        }
+
+        .slide-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.2);
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+        }
+
+        .slider-nav {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 14px;
+        }
+
+        .slider-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider-dot.active {
+            width: 22px;
+            background: #6366f1;
+        }
+
+        .slider-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(8px);
+        }
+
+        .slider-arrow:hover {
+            background: rgba(99,102,241,0.4);
+            border-color: rgba(99,102,241,0.5);
+        }
+
+        .slider-arrow.left { left: 12px; }
+        .slider-arrow.right { right: 12px; }
+
+        .btn-download {
+            background: linear-gradient(135deg, #06b6d4, #6366f1);
+            font-family: 'Syne', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-download::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .btn-download:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 30px -8px rgba(99,102,241,0.5);
+        }
+
+        .btn-download:hover::after { opacity: 1; }
+
+        .btn-support {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.04);
+            font-family: 'Syne', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .btn-support:hover {
+            background: rgba(255,198,0,0.1);
+            border-color: rgba(255,198,0,0.3);
+            color: #fbbf24;
+            transform: translateY(-1px);
+        }
+
+        .version-chip {
+            background: rgba(6, 182, 212, 0.12);
+            color: #67e8f9;
+            border: 1px solid rgba(6, 182, 212, 0.25);
+            font-family: 'DM Sans', sans-serif;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .modal-close:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .feature-dot {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #6366f1;
+            margin-top: 8px;
+            flex-shrink: 0;
         }
     </style>
 </head>
 <body class="antialiased relative">
     <div class="noise"></div>
     <div class="orb w-96 h-96 bg-indigo-500 top-0 left-0"></div>
-    <div class="orb w-80 h-80 bg-purple-500 bottom-0 right-0 animation-delay-2000"></div>
-    <div class="orb w-64 h-64 bg-cyan-500 top-1/2 left-1/2 animation-delay-4000"></div>
+    <div class="orb w-80 h-80 bg-purple-500 bottom-0 right-0" style="animation-delay:2s"></div>
+    <div class="orb w-64 h-64 bg-cyan-500 top-1/2 left-1/2" style="animation-delay:4s"></div>
 
-    <!-- Header -->
     <header class="fixed w-full top-0 z-50 glass-card border-x-0 border-t-0">
         <div class="container mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
@@ -201,42 +495,50 @@
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
                         <img src="saieesoft_logo.png" alt="Logo" class="w-full h-full object-contain p-1">
                     </div>
-                    <span class="text-xl font-bold tracking-tight">Saiee<span class="gradient-text">Soft</span></span>
+                    <span class="text-xl font-bold tracking-tight" style="font-family:'Syne',sans-serif">Saiee<span class="gradient-text">Soft</span></span>
                 </a>
-                
+
                 <nav class="hidden md:flex items-center gap-8">
                     <a href="#projects" class="nav-link text-sm font-medium" data-translate="projects">Projects</a>
                     <a href="#contact" class="nav-link text-sm font-medium" data-translate="contact">Contact</a>
                     <div class="h-4 w-px bg-white/10"></div>
-                    <div class="flex gap-2 text-xs font-medium">
-                        <button onclick="setLanguage('en')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="en">EN</button>
-                        <button onclick="setLanguage('ru')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="ru">RU</button>
-                        <button onclick="setLanguage('ua')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="ua">UA</button>
-                        <button onclick="setLanguage('pl')" class="lang-btn px-2 py-1 rounded hover:bg-white/10 transition opacity-60 hover:opacity-100" data-lang="pl">PL</button>
+                    <div class="lang-dropdown" id="langDropdown">
+                        <button class="lang-btn-trigger" onclick="toggleLangDropdown(event)">
+                            <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                            <span id="currentLangLabel">EN</span>
+                            <i data-lucide="chevron-down" class="w-3 h-3" id="langChevron" style="transition:transform 0.2s"></i>
+                        </button>
+                        <div class="lang-dropdown-menu" id="langDropdownMenu">
+                            <div class="lang-option" onclick="setLanguage('en')" data-lang="en">🇬🇧 English</div>
+                            <div class="lang-option" onclick="setLanguage('pl')" data-lang="pl">🇵🇱 Polski</div>
+                            <div class="lang-option" onclick="setLanguage('ru')" data-lang="ru">🇷🇺 Русский</div>
+                            <div class="lang-option" onclick="setLanguage('ua')" data-lang="ua">🇺🇦 Українська</div>
+                            <div class="lang-option" onclick="setLanguage('de')" data-lang="de">🇩🇪 Deutsch</div>
+                        </div>
                     </div>
                 </nav>
-                
+
                 <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-400 hover:text-white">
                     <i data-lucide="menu" class="w-6 h-6" id="menuIcon"></i>
                 </button>
             </div>
-            
+
             <div id="mobileMenu" class="mobile-menu md:hidden">
                 <div class="flex flex-col gap-4 pt-6 pb-2 border-t border-white/10 mt-4">
                     <a href="#projects" class="text-slate-400 hover:text-white transition" data-translate="projects">Projects</a>
                     <a href="#contact" class="text-slate-400 hover:text-white transition" data-translate="contact">Contact</a>
-                    <div class="flex gap-4 text-sm pt-2">
-                        <button onclick="setLanguage('en')" class="text-slate-400 hover:text-white">English</button>
-                        <button onclick="setLanguage('ru')" class="text-slate-400 hover:text-white">Русский</button>
-                        <button onclick="setLanguage('ua')" class="text-slate-400 hover:text-white">Українська</button>
-                        <button onclick="setLanguage('pl')" class="text-slate-400 hover:text-white">Polski</button>
+                    <div class="flex flex-wrap gap-2 pt-2">
+                        <button onclick="setLanguage('en')" class="px-3 py-1.5 rounded-full border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/5 transition" data-mobile-lang="en">🇬🇧 EN</button>
+                        <button onclick="setLanguage('pl')" class="px-3 py-1.5 rounded-full border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/5 transition" data-mobile-lang="pl">🇵🇱 PL</button>
+                        <button onclick="setLanguage('ru')" class="px-3 py-1.5 rounded-full border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/5 transition" data-mobile-lang="ru">🇷🇺 RU</button>
+                        <button onclick="setLanguage('ua')" class="px-3 py-1.5 rounded-full border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/5 transition" data-mobile-lang="ua">🇺🇦 UA</button>
+                        <button onclick="setLanguage('de')" class="px-3 py-1.5 rounded-full border border-white/10 text-xs text-slate-400 hover:text-white hover:bg-white/5 transition" data-mobile-lang="de">🇩🇪 DE</button>
                     </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <!-- Hero -->
     <section class="pt-32 pb-20 lg:pt-48 lg:pb-32 relative overflow-hidden">
         <div class="container mx-auto px-6 text-center relative z-10">
             <div class="max-w-4xl mx-auto">
@@ -251,7 +553,7 @@
                         <span data-translate="exploreProjects">Explore Projects</span>
                         <i data-lucide="arrow-down" class="w-4 h-4"></i>
                     </a>
-                    <a href="#contact" class="px-8 py-3 rounded-full font-medium border border-white/10 hover:bg-white/5 transition text-slate-300" data-translate="getInTouch">
+                    <a href="#contact" class="px-8 py-3 rounded-full font-medium border border-white/10 hover:bg-white/5 transition text-slate-300" style="font-family:'DM Sans',sans-serif" data-translate="getInTouch">
                         Get in Touch
                     </a>
                 </div>
@@ -259,7 +561,6 @@
         </div>
     </section>
 
-    <!-- Projects -->
     <section id="projects" class="py-20 relative">
         <div class="container mx-auto px-6">
             <div class="mb-16 text-center">
@@ -268,16 +569,15 @@
                     A curated selection of utilities built with precision and attention to detail.
                 </p>
             </div>
-            
+
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                <!-- SwiftService -->
-                <div class="glass-card rounded-2xl p-6 glow group fade-up">
+                <div class="glass-card rounded-2xl p-6 glow group fade-up project-card" onclick="openSwiftServiceModal()">
                     <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                         <i data-lucide="settings" class="w-7 h-7 text-white"></i>
                     </div>
                     <div class="flex items-center gap-2 mb-3">
-                        <h3 class="text-xl font-bold">SwiftService</h3>
-                        <span class="swiftservice-version text-xs px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"></span>
+                        <h3 class="text-xl font-bold" style="font-family:'Syne',sans-serif">SwiftService</h3>
+                        <span class="swiftservice-version text-xs px-2 py-0.5 rounded-full version-chip"></span>
                     </div>
                     <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="swiftserviceDesc">
                         Advanced Windows optimization suite. System cleaning, registry maintenance, and performance tuning in one lightweight utility.
@@ -287,20 +587,18 @@
                         <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagWindows">Windows</span>
                         <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagUtils">Utilities</span>
                     </div>
-                    <!-- Прямая ссылка на скачивание файла -->
-                    <a href="SwiftService_Setup.exe" download class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                        <span data-translate="downloadForWin">Download for Windows</span>
-                    </a>
+                    <div class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-slate-300 pointer-events-none">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                        <span data-translate="viewDetails">View Details</span>
+                    </div>
                 </div>
 
-                <!-- Exolute Converter -->
                 <div class="glass-card rounded-2xl p-6 glow group fade-up delay-100">
                     <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                         <i data-lucide="arrow-left-right" class="w-7 h-7 text-white"></i>
                     </div>
                     <div class="flex items-center gap-2 mb-3">
-                        <h3 class="text-xl font-bold">Exolute Converter</h3>
+                        <h3 class="text-xl font-bold" style="font-family:'Syne',sans-serif">Exolute Converter</h3>
                         <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30" data-translate="popularBadge">POPULAR</span>
                     </div>
                     <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="exoluteDesc">
@@ -317,13 +615,12 @@
                     </a>
                 </div>
 
-                <!-- AskAnonymousBot -->
                 <div class="glass-card rounded-2xl p-6 glow group fade-up delay-200">
                     <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                         <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
                     </div>
                     <div class="flex items-center gap-2 mb-3">
-                        <h3 class="text-xl font-bold">@AskAnonymousBot</h3>
+                        <h3 class="text-xl font-bold" style="font-family:'Syne',sans-serif">@AskAnonymousBot</h3>
                     </div>
                     <p class="text-slate-400 text-sm mb-6 leading-relaxed" data-translate="askanonymousDesc">
                         Telegram bot for anonymous messaging. End-to-end privacy, no data storage, and seamless group integration.
@@ -342,7 +639,6 @@
         </div>
     </section>
 
-    <!-- Contact -->
     <section id="contact" class="py-20 relative">
         <div class="container mx-auto px-6">
             <div class="max-w-4xl mx-auto">
@@ -353,7 +649,6 @@
                             <p class="text-slate-400 mb-8" data-translate="contactSubtitle">
                                 Have a project in mind or want to discuss potential opportunities? Reach out directly.
                             </p>
-                            
                             <div class="space-y-4">
                                 <a href="mailto:saieesoft.dev@gmail.com" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
                                     <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
@@ -375,17 +670,16 @@
                                 </a>
                             </div>
                         </div>
-                        
                         <form action="https://formsubmit.co/saieesoft.dev@gmail.com" method="POST" class="space-y-4">
                             <input type="hidden" name="_captcha" value="false">
                             <div>
-                                <input type="text" name="name" placeholder="Name" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500">
+                                <input type="text" name="name" data-placeholder-translate="placeholderName" placeholder="Name" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500">
                             </div>
                             <div>
-                                <input type="email" name="email" placeholder="Email" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500">
+                                <input type="email" name="email" data-placeholder-translate="placeholderEmail" placeholder="Email" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500">
                             </div>
                             <div>
-                                <textarea name="message" placeholder="Message" rows="4" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 resize-none"></textarea>
+                                <textarea name="message" data-placeholder-translate="placeholderMessage" placeholder="Message" rows="4" required class="input-field w-full px-4 py-3 rounded-xl text-sm text-white placeholder-slate-500 resize-none"></textarea>
                             </div>
                             <button type="submit" class="btn-primary w-full py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2">
                                 <span data-translate="sendMessage">Send Message</span>
@@ -398,19 +692,133 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="py-8 border-t border-white/10 mt-20">
         <div class="container mx-auto px-6 flex justify-center items-center">
             <p class="text-slate-500 text-sm" data-translate="copyright">© 2026 SaieeSoft. All rights reserved.</p>
         </div>
     </footer>
 
+    <div class="modal-overlay" id="swiftServiceModal">
+        <div class="modal-backdrop" onclick="closeSwiftServiceModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeSwiftServiceModal()">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+
+            <div class="p-6 md:p-8">
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div class="flex flex-col">
+                        <div class="slider-container" id="swiftSlider">
+                            <div class="slide active" data-index="0">
+                                <div class="slide-placeholder">
+                                    <i data-lucide="monitor" style="width:48px;height:48px;opacity:0.3"></i>
+                                    <span style="font-size:12px;opacity:0.4" data-translate="screenshotLabel">screenshot1.png</span>
+                                </div>
+                            </div>
+                            <div class="slide" data-index="1">
+                                <div class="slide-placeholder">
+                                    <i data-lucide="cpu" style="width:48px;height:48px;opacity:0.3"></i>
+                                    <span style="font-size:12px;opacity:0.4" data-translate="screenshotLabel2">screenshot2.png</span>
+                                </div>
+                            </div>
+                            <div class="slide" data-index="2">
+                                <div class="slide-placeholder">
+                                    <i data-lucide="hard-drive" style="width:48px;height:48px;opacity:0.3"></i>
+                                    <span style="font-size:12px;opacity:0.4" data-translate="screenshotLabel3">screenshot3.png</span>
+                                </div>
+                            </div>
+                            <div class="slide" data-index="3">
+                                <div class="slide-placeholder">
+                                    <i data-lucide="shield" style="width:48px;height:48px;opacity:0.3"></i>
+                                    <span style="font-size:12px;opacity:0.4" data-translate="screenshotLabel4">screenshot4.png</span>
+                                </div>
+                            </div>
+                            <button class="slider-arrow left" onclick="slideSwift(-1)">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button class="slider-arrow right" onclick="slideSwift(1)">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="slider-nav" id="sliderDots">
+                            <div class="slider-dot active" onclick="goToSlide(0)"></div>
+                            <div class="slider-dot" onclick="goToSlide(1)"></div>
+                            <div class="slider-dot" onclick="goToSlide(2)"></div>
+                            <div class="slider-dot" onclick="goToSlide(3)"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col gap-5">
+                        <div>
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                                    <i data-lucide="settings" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-2xl font-bold" style="font-family:'Syne',sans-serif;line-height:1.1">SwiftService <span class="gradient-text">Tool</span></h2>
+                                    <span class="swiftservice-version text-xs px-2 py-0.5 rounded-full version-chip mt-1 inline-block"></span>
+                                </div>
+                            </div>
+                            <p class="text-slate-400 text-sm leading-relaxed" data-translate="swiftserviceModalDesc">
+                                A comprehensive Windows optimization suite built for performance-focused users. Clean, repair, and tune your system with precision tools — all in one lightweight app.
+                            </p>
+                        </div>
+
+                        <div class="space-y-2.5">
+                            <div class="feature-item">
+                                <div class="feature-dot"></div>
+                                <span data-translate="feature1">System cleaning & junk removal</span>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-dot"></div>
+                                <span data-translate="feature2">Registry maintenance & repair</span>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-dot"></div>
+                                <span data-translate="feature3">Network & DNS tools</span>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-dot"></div>
+                                <span data-translate="feature4">Gaming & performance tweaks</span>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-dot"></div>
+                                <span data-translate="feature5">Privacy & security controls</span>
+                            </div>
+                            <div class="feature-item">
+                                <div class="feature-dot"></div>
+                                <span data-translate="feature6">EN / RU localization</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap gap-2 pt-1">
+                            <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagSystem">System</span>
+                            <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagWindows">Windows</span>
+                            <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagUtils">Utilities</span>
+                        </div>
+
+                        <div class="flex flex-col gap-3 mt-auto pt-2">
+                            <a href="SwiftService_Setup.exe" download class="btn-download flex items-center justify-center gap-2.5 w-full py-3.5 rounded-xl text-white text-sm">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span data-translate="downloadForWin">Download for Windows</span>
+                            </a>
+                            <a href="https://www.paypal.com/donate/?hosted_button_id=YOUR_BUTTON_ID" target="_blank" class="btn-support flex items-center justify-center gap-2.5 w-full py-3 rounded-xl text-sm">
+                                <i data-lucide="heart" class="w-4 h-4" style="color:#fbbf24"></i>
+                                <span data-translate="supportDev">Support the Developer</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const SWIFTSERVICE_VERSION = "v1.2.1";
-        
-        // Translations
+
         const translations = {
             en: {
+                langLabel: "EN",
                 projects: "Projects",
                 contact: "Contact",
                 heroTitle: "Crafting",
@@ -422,6 +830,7 @@
                 projectsSubtitle: "A curated selection of utilities built with precision and attention to detail.",
                 popularBadge: "POPULAR",
                 swiftserviceDesc: "Advanced Windows optimization suite. System cleaning, registry maintenance, and performance tuning in one lightweight utility.",
+                swiftserviceModalDesc: "A comprehensive Windows optimization suite built for performance-focused users. Clean, repair, and tune your system with precision tools — all in one lightweight app.",
                 exoluteDesc: "Real-time currency conversion with historical analytics, offline mode support, and intuitive interface design.",
                 askanonymousDesc: "Telegram bot for anonymous messaging. End-to-end privacy, no data storage, and seamless group integration.",
                 tagSystem: "System",
@@ -432,6 +841,7 @@
                 tagOffline: "Offline",
                 tagSocial: "Social",
                 tagPrivacy: "Privacy",
+                viewDetails: "View Details",
                 downloadForWin: "Download for Windows",
                 viewOnStore: "View on Play Store",
                 openInTelegram: "Open in Telegram",
@@ -439,9 +849,25 @@
                 contactSubtitle: "Have a project in mind or want to discuss potential opportunities? Reach out directly.",
                 playStore: "Play Store Developer",
                 sendMessage: "Send Message",
-                copyright: "© 2026 SaieeSoft. All rights reserved."
+                copyright: "© 2026 SaieeSoft. All rights reserved.",
+                feature1: "System cleaning & junk removal",
+                feature2: "Registry maintenance & repair",
+                feature3: "Network & DNS tools",
+                feature4: "Gaming & performance tweaks",
+                feature5: "Privacy & security controls",
+                feature6: "EN / RU localization",
+                screenshotLabel: "Screenshot 1",
+                screenshotLabel2: "Screenshot 2",
+                screenshotLabel3: "Screenshot 3",
+                screenshotLabel4: "Screenshot 4",
+                replaceScreenshots: "Replace placeholder images with real screenshots",
+                supportDev: "Support the Developer",
+                placeholderName: "Name",
+                placeholderEmail: "Email",
+                placeholderMessage: "Message"
             },
             ru: {
+                langLabel: "RU",
                 projects: "Проекты",
                 contact: "Контакт",
                 heroTitle: "Создаем",
@@ -453,6 +879,7 @@
                 projectsSubtitle: "Подборка утилит, созданных с точностью и вниманием к деталям.",
                 popularBadge: "ПОПУЛЯРНО",
                 swiftserviceDesc: "Продвинутый набор для оптимизации Windows. Очистка системы, работа с реестром и настройка производительности в одной легкой утилите.",
+                swiftserviceModalDesc: "Комплексный набор оптимизации Windows для требовательных пользователей. Очищайте, восстанавливайте и настраивайте систему точными инструментами — всё в одном лёгком приложении.",
                 exoluteDesc: "Конвертация валют в реальном времени с исторической аналитикой, поддержкой офлайн-режима и интуитивным дизайном.",
                 askanonymousDesc: "Telegram-бот для анонимных сообщений. Приватность без компромиссов, без хранения данных и бесшовная интеграция в группы.",
                 tagSystem: "Система",
@@ -463,6 +890,7 @@
                 tagOffline: "Офлайн",
                 tagSocial: "Социальное",
                 tagPrivacy: "Приватность",
+                viewDetails: "Подробнее",
                 downloadForWin: "Скачать для Windows",
                 viewOnStore: "Смотреть в Play Store",
                 openInTelegram: "Открыть в Telegram",
@@ -470,9 +898,25 @@
                 contactSubtitle: "Есть идея проекта или хотите обсудить сотрудничество? Свяжитесь напрямую.",
                 playStore: "Разработчик Play Store",
                 sendMessage: "Отправить",
-                copyright: "© 2026 SaieeSoft. Все права защищены."
+                copyright: "© 2026 SaieeSoft. Все права защищены.",
+                feature1: "Очистка системы и удаление мусора",
+                feature2: "Обслуживание и ремонт реестра",
+                feature3: "Сетевые инструменты и DNS",
+                feature4: "Оптимизация для игр и производительности",
+                feature5: "Управление конфиденциальностью и безопасностью",
+                feature6: "Локализация EN / RU",
+                screenshotLabel: "Скриншот 1",
+                screenshotLabel2: "Скриншот 2",
+                screenshotLabel3: "Скриншот 3",
+                screenshotLabel4: "Скриншот 4",
+                replaceScreenshots: "Замените заглушки реальными скриншотами",
+                supportDev: "Поддержать разработчика",
+                placeholderName: "Имя",
+                placeholderEmail: "Email",
+                placeholderMessage: "Сообщение"
             },
             ua: {
+                langLabel: "UA",
                 projects: "Проєкти",
                 contact: "Контакт",
                 heroTitle: "Створюємо",
@@ -484,6 +928,7 @@
                 projectsSubtitle: "Підбірка утиліт, створених з точністю та увагою до деталей.",
                 popularBadge: "ПОПУЛЯРНЕ",
                 swiftserviceDesc: "Просунутий набір для оптимізації Windows. Очищення системи, робота з реєстром та налаштування продуктивності в одній легкій утиліті.",
+                swiftserviceModalDesc: "Комплексний набір оптимізації Windows для вимогливих користувачів. Очищуйте, відновлюйте та налаштовуйте систему точними інструментами — все в одному легкому застосунку.",
                 exoluteDesc: "Конвертація валют у реальному часі з історичною аналітикою, підтримкою офлайн-режиму та інтуїтивним дизайном.",
                 askanonymousDesc: "Telegram-бот для анонімних повідомлень. Приватність без компромісів, без зберігання даних та безшовна інтеграція в групи.",
                 tagSystem: "Система",
@@ -494,6 +939,7 @@
                 tagOffline: "Офлайн",
                 tagSocial: "Соціальне",
                 tagPrivacy: "Конфіденційність",
+                viewDetails: "Детальніше",
                 downloadForWin: "Завантажити для Windows",
                 viewOnStore: "Дивитись у Play Store",
                 openInTelegram: "Відкрити в Telegram",
@@ -501,9 +947,25 @@
                 contactSubtitle: "Є ідея проєкту або хочете обговорити співпрацю? Зв'яжіться напряму.",
                 playStore: "Розробник Play Store",
                 sendMessage: "Надіслати",
-                copyright: "© 2026 SaieeSoft. Всі права захищені."
+                copyright: "© 2026 SaieeSoft. Всі права захищені.",
+                feature1: "Очищення системи та видалення сміття",
+                feature2: "Обслуговування та відновлення реєстру",
+                feature3: "Мережеві інструменти та DNS",
+                feature4: "Оптимізація для ігор та продуктивності",
+                feature5: "Керування конфіденційністю та безпекою",
+                feature6: "Локалізація EN / RU",
+                screenshotLabel: "Скриншот 1",
+                screenshotLabel2: "Скриншот 2",
+                screenshotLabel3: "Скриншот 3",
+                screenshotLabel4: "Скриншот 4",
+                replaceScreenshots: "Замініть заглушки реальними скриншотами",
+                supportDev: "Підтримати розробника",
+                placeholderName: "Ім'я",
+                placeholderEmail: "Email",
+                placeholderMessage: "Повідомлення"
             },
             pl: {
+                langLabel: "PL",
                 projects: "Projekty",
                 contact: "Kontakt",
                 heroTitle: "Tworzymy",
@@ -515,6 +977,7 @@
                 projectsSubtitle: "Wyselekcjonowany zestaw narzędzi zbudowanych z precyzją i dbałością o szczegóły.",
                 popularBadge: "POPULARNE",
                 swiftserviceDesc: "Zaawansowany zestaw optymalizacji Windows. Czyszczenie systemu, konserwacja rejestru i dostrajanie wydajności w jednym lekkim narzędziu.",
+                swiftserviceModalDesc: "Kompleksowy pakiet optymalizacji Windows dla wymagających użytkowników. Czyść, naprawiaj i dostrajaj system precyzyjnymi narzędziami — wszystko w jednej lekkiej aplikacji.",
                 exoluteDesc: "Konwersja walut w czasie rzeczywistym z analizą historyczną, obsługą trybu offline i intuicyjnym projektem.",
                 askanonymousDesc: "Bot Telegram do anonimowych wiadomości. Prywatność bez kompromisów, brak przechowywania danych i płynna integracja z grupami.",
                 tagSystem: "System",
@@ -525,6 +988,7 @@
                 tagOffline: "Offline",
                 tagSocial: "Społeczność",
                 tagPrivacy: "Prywatność",
+                viewDetails: "Szczegóły",
                 downloadForWin: "Pobierz dla Windows",
                 viewOnStore: "Zobacz w Play Store",
                 openInTelegram: "Otwórz w Telegramie",
@@ -532,130 +996,210 @@
                 contactSubtitle: "Masz pomysł na projekt lub chcesz omówić potencjalną współpracę? Skontaktuj się bezpośrednio.",
                 playStore: "Deweloper Play Store",
                 sendMessage: "Wyślij",
-                copyright: "© 2026 SaieeSoft. Wszelkie prawa zastrzeżone."
+                copyright: "© 2026 SaieeSoft. Wszelkie prawa zastrzeżone.",
+                feature1: "Czyszczenie systemu i usuwanie śmieci",
+                feature2: "Konserwacja i naprawa rejestru",
+                feature3: "Narzędzia sieciowe i DNS",
+                feature4: "Optymalizacja gier i wydajności",
+                feature5: "Kontrola prywatności i bezpieczeństwa",
+                feature6: "Lokalizacja EN / RU",
+                screenshotLabel: "Zrzut ekranu 1",
+                screenshotLabel2: "Zrzut ekranu 2",
+                screenshotLabel3: "Zrzut ekranu 3",
+                screenshotLabel4: "Zrzut ekranu 4",
+                replaceScreenshots: "Zastąp obrazy zastępcze prawdziwymi zrzutami ekranu",
+                supportDev: "Wesprzyj dewelopera",
+                placeholderName: "Imię",
+                placeholderEmail: "E-mail",
+                placeholderMessage: "Wiadomość"
+            },
+            de: {
+                langLabel: "DE",
+                projects: "Projekte",
+                contact: "Kontakt",
+                heroTitle: "Wir erschaffen",
+                heroTitleAccent: "Digitale Tools",
+                heroSubtitle: "Minimalistische Werkzeuge für moderne Arbeitsabläufe. Klar, effizient und sorgfältig gestaltet.",
+                exploreProjects: "Projekte erkunden",
+                getInTouch: "Kontakt aufnehmen",
+                projectsTitle: "Ausgewählte",
+                projectsSubtitle: "Eine kuratierte Auswahl von Werkzeugen, die mit Präzision und Liebe zum Detail entwickelt wurden.",
+                popularBadge: "BELIEBT",
+                swiftserviceDesc: "Fortschrittliches Windows-Optimierungspaket. Systembereinigung, Registrierungspflege und Leistungsoptimierung in einem leichten Tool.",
+                swiftserviceModalDesc: "Ein umfassendes Windows-Optimierungspaket für leistungsorientierte Nutzer. Bereinige, repariere und optimiere dein System mit präzisen Werkzeugen — alles in einer leichten App.",
+                exoluteDesc: "Echtzeit-Währungsumrechnung mit historischer Analyse, Offline-Modus und intuitivem Design.",
+                askanonymousDesc: "Telegram-Bot für anonyme Nachrichten. Vollständige Privatsphäre, keine Datenspeicherung und nahtlose Gruppenintegration.",
+                tagSystem: "System",
+                tagWindows: "Windows",
+                tagUtils: "Tools",
+                tagFinance: "Finanzen",
+                tagAndroid: "Android",
+                tagOffline: "Offline",
+                tagSocial: "Sozial",
+                tagPrivacy: "Datenschutz",
+                viewDetails: "Details ansehen",
+                downloadForWin: "Für Windows herunterladen",
+                viewOnStore: "Im Play Store ansehen",
+                openInTelegram: "In Telegram öffnen",
+                contactTitle: "Zusammenarbeiten",
+                contactSubtitle: "Haben Sie ein Projekt oder möchten Sie mögliche Kooperationen besprechen? Nehmen Sie direkt Kontakt auf.",
+                playStore: "Play Store Entwickler",
+                sendMessage: "Nachricht senden",
+                copyright: "© 2026 SaieeSoft. Alle Rechte vorbehalten.",
+                feature1: "Systembereinigung & Entrümpelung",
+                feature2: "Registrierungspflege & -reparatur",
+                feature3: "Netzwerk- & DNS-Tools",
+                feature4: "Gaming- & Leistungs-Tweaks",
+                feature5: "Datenschutz- & Sicherheitseinstellungen",
+                feature6: "EN / RU Lokalisierung",
+                screenshotLabel: "Screenshot 1",
+                screenshotLabel2: "Screenshot 2",
+                screenshotLabel3: "Screenshot 3",
+                screenshotLabel4: "Screenshot 4",
+                replaceScreenshots: "Platzhalter durch echte Screenshots ersetzen",
+                supportDev: "Entwickler unterstützen",
+                placeholderName: "Name",
+                placeholderEmail: "E-Mail",
+                placeholderMessage: "Nachricht"
             }
         };
 
-        // Auto-detect language
-        function detectLanguage() {
-            const browserLang = navigator.language || navigator.userLanguage;
-            const shortLang = browserLang.split('-')[0];
-            const available = ['en', 'ru', 'ua', 'pl'];
-            
-            if (available.includes(shortLang)) {
-                return shortLang;
-            }
-            
-            // Fallback mappings
-            if (shortLang === 'uk') return 'ua';
-            if (shortLang === 'be' || shortLang === 'kk' || shortLang === 'ky') return 'ru';
-            
-            return 'en';
-        }
+        let currentLang = 'en';
+        let currentSlide = 0;
+        const totalSlides = 4;
 
-        let currentLang = detectLanguage();
+        function detectLanguage() {
+            const browserLang = (navigator.language || navigator.userLanguage).split('-')[0];
+            const map = { uk: 'ua', be: 'ru', kk: 'ru', ky: 'ru' };
+            if (translations[browserLang]) return browserLang;
+            return map[browserLang] || 'en';
+        }
 
         function setLanguage(lang) {
             currentLang = lang;
             document.documentElement.lang = lang;
-            
-            // Update all translatable elements
+
+            const t = translations[lang];
+            if (!t) return;
+
             document.querySelectorAll('[data-translate]').forEach(el => {
                 const key = el.getAttribute('data-translate');
-                if (translations[lang] && translations[lang][key]) {
-                    el.textContent = translations[lang][key];
-                }
+                if (t[key] !== undefined) el.textContent = t[key];
             });
-            
-            // Update SwiftService version badges
+
+            document.querySelectorAll('[data-placeholder-translate]').forEach(el => {
+                const key = el.getAttribute('data-placeholder-translate');
+                if (t[key] !== undefined) el.placeholder = t[key];
+            });
+
+            document.getElementById('currentLangLabel').textContent = t.langLabel || lang.toUpperCase();
+
+            document.querySelectorAll('.lang-option').forEach(opt => {
+                opt.classList.toggle('active', opt.getAttribute('data-lang') === lang);
+            });
+
+            document.querySelectorAll('[data-mobile-lang]').forEach(btn => {
+                const isActive = btn.getAttribute('data-mobile-lang') === lang;
+                btn.style.borderColor = isActive ? 'rgba(99,102,241,0.5)' : '';
+                btn.style.color = isActive ? '#818cf8' : '';
+            });
+
             updateVersionBadges();
-            
-            // Update buttons state
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                if (btn.getAttribute('data-lang') === lang) {
-                    btn.classList.add('text-white', 'bg-white/10');
-                    btn.classList.remove('opacity-60');
-                } else {
-                    btn.classList.remove('text-white', 'bg-white/10');
-                    btn.classList.add('opacity-60');
-                }
-            });
-            
+            lucide.createIcons();
             localStorage.setItem('saieesoft-lang', lang);
+
+            const dropdown = document.getElementById('langDropdownMenu');
+            dropdown.classList.remove('open');
+            document.getElementById('langChevron').style.transform = 'rotate(0deg)';
         }
 
         function updateVersionBadges() {
-            // Обновляем все бейджи с версией SwiftService
-            document.querySelectorAll('.swiftservice-version').forEach(badge => {
-                badge.textContent = SWIFTSERVICE_VERSION;
+            document.querySelectorAll('.swiftservice-version').forEach(b => {
+                b.textContent = SWIFTSERVICE_VERSION;
             });
         }
 
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            const isDark = document.documentElement.classList.contains('dark');
-            localStorage.setItem('saieesoft-theme', isDark ? 'dark' : 'light');
+        function toggleLangDropdown(e) {
+            e.stopPropagation();
+            const menu = document.getElementById('langDropdownMenu');
+            const chevron = document.getElementById('langChevron');
+            const isOpen = menu.classList.toggle('open');
+            chevron.style.transform = isOpen ? 'rotate(180deg)' : 'rotate(0deg)';
         }
+
+        document.addEventListener('click', () => {
+            document.getElementById('langDropdownMenu').classList.remove('open');
+            document.getElementById('langChevron').style.transform = 'rotate(0deg)';
+        });
 
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
             const icon = document.getElementById('menuIcon');
             menu.classList.toggle('open');
-            
-            if (menu.classList.contains('open')) {
-                icon.setAttribute('data-lucide', 'x');
-            } else {
-                icon.setAttribute('data-lucide', 'menu');
-            }
+            icon.setAttribute('data-lucide', menu.classList.contains('open') ? 'x' : 'menu');
             lucide.createIcons();
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check for saved language or use detected
-            const savedLang = localStorage.getItem('saieesoft-lang');
-            if (savedLang && translations[savedLang]) {
-                setLanguage(savedLang);
-            } else {
-                setLanguage(detectLanguage());
-            }
-            
-            // Check for saved theme
-            const savedTheme = localStorage.getItem('saieesoft-theme');
-            if (savedTheme === 'light') {
-                document.documentElement.classList.remove('dark');
-            } else {
-                document.documentElement.classList.add('dark');
-            }
-            
-            // Initialize Lucide icons
+        function openSwiftServiceModal() {
+            const modal = document.getElementById('swiftServiceModal');
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
             lucide.createIcons();
-            
-            // Update version badges
-            updateVersionBadges();
-            
-            // Initialize intersection observer for animations
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.animationPlayState = 'running';
-                    }
-                });
-            });
-            
-            document.querySelectorAll('.fade-up').forEach(el => {
-                observer.observe(el);
-            });
+        }
+
+        function closeSwiftServiceModal() {
+            const modal = document.getElementById('swiftServiceModal');
+            modal.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Escape') closeSwiftServiceModal();
         });
 
-        // Smooth scroll
+        function goToSlide(index) {
+            const slides = document.querySelectorAll('#swiftSlider .slide');
+            const dots = document.querySelectorAll('#sliderDots .slider-dot');
+
+            slides[currentSlide].classList.remove('active');
+            slides[currentSlide].classList.add('prev');
+            setTimeout(() => slides[currentSlide < totalSlides ? currentSlide : 0].classList.remove('prev'), 500);
+
+            currentSlide = (index + totalSlides) % totalSlides;
+
+            slides.forEach((s, i) => {
+                s.classList.remove('active', 'prev');
+            });
+            slides[currentSlide].classList.add('active');
+
+            dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+        }
+
+        function slideSwift(dir) {
+            goToSlide(currentSlide + dir);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('saieesoft-lang');
+            setLanguage((savedLang && translations[savedLang]) ? savedLang : detectLanguage());
+
+            lucide.createIcons();
+            updateVersionBadges();
+
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.style.animationPlayState = 'running';
+                });
+            });
+            document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+        });
+
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-            anchor.addEventListener('click', function (e) {
+            anchor.addEventListener('click', function(e) {
                 e.preventDefault();
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    // Close mobile menu if open
                     document.getElementById('mobileMenu').classList.remove('open');
                     lucide.createIcons();
                 }
