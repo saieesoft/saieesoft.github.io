@@ -9,7 +9,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/png" href="saieesoft_logo.png">
-    <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
@@ -326,22 +325,17 @@
             transform: translateX(-40px);
         }
 
-        .slide img, .slide .slide-placeholder {
+        .slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             border-radius: 16px;
+            cursor: zoom-in;
+            transition: transform 0.2s ease;
         }
 
-        .slide-placeholder {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            color: rgba(255,255,255,0.2);
-            font-family: 'Syne', sans-serif;
-            font-size: 13px;
+        .slide img:hover {
+            transform: scale(1.02);
         }
 
         .slider-nav {
@@ -480,6 +474,65 @@
             margin-top: 8px;
             flex-shrink: 0;
         }
+
+        /* ── Lightbox ── */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.92);
+            backdrop-filter: blur(16px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .lightbox.open {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .lightbox img {
+            max-width: 95vw;
+            max-height: 92vh;
+            border-radius: 12px;
+            object-fit: contain;
+            box-shadow: 0 40px 80px -20px rgba(0,0,0,0.9);
+            transform: scale(0.93);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .lightbox.open img {
+            transform: scale(1);
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: 18px;
+            right: 18px;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #fff;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .lightbox-close:hover {
+            background: rgba(239,68,68,0.25);
+            border-color: rgba(239,68,68,0.4);
+            color: #f87171;
+        }
     </style>
 </head>
 <body class="antialiased relative">
@@ -491,10 +544,8 @@
     <header class="fixed w-full top-0 z-50 glass-card border-x-0 border-t-0">
         <div class="container mx-auto px-6 py-4">
             <div class="flex justify-between items-center">
-                <a href="#" class="flex items-center gap-3 group">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <img src="saieesoft_logo.png" alt="Logo" class="w-full h-full object-contain p-1">
-                    </div>
+                <!-- Logo: text only, no image -->
+                <a href="#" class="flex items-center gap-2 group">
                     <span class="text-xl font-bold tracking-tight" style="font-family:'Syne',sans-serif">Saiee<span class="gradient-text">Soft</span></span>
                 </a>
 
@@ -504,9 +555,9 @@
                     <div class="h-4 w-px bg-white/10"></div>
                     <div class="lang-dropdown" id="langDropdown">
                         <button class="lang-btn-trigger" onclick="toggleLangDropdown(event)">
-                            <i data-lucide="globe" class="w-3.5 h-3.5"></i>
+                            <i class="fa-solid fa-globe" style="font-size:13px"></i>
                             <span id="currentLangLabel">EN</span>
-                            <i data-lucide="chevron-down" class="w-3 h-3" id="langChevron" style="transition:transform 0.2s"></i>
+                            <i class="fa-solid fa-chevron-down" style="font-size:11px" id="langChevron"></i>
                         </button>
                         <div class="lang-dropdown-menu" id="langDropdownMenu">
                             <div class="lang-option" onclick="setLanguage('en')" data-lang="en">🇬🇧 English</div>
@@ -514,13 +565,12 @@
                             <div class="lang-option" onclick="setLanguage('pl')" data-lang="pl">🇵🇱 Polski</div>
                             <div class="lang-option" onclick="setLanguage('ru')" data-lang="ru">🇷🇺 Русский</div>
                             <div class="lang-option" onclick="setLanguage('ua')" data-lang="ua">🇺🇦 Українська</div>
-
                         </div>
                     </div>
                 </nav>
 
                 <button onclick="toggleMobileMenu()" class="md:hidden p-2 text-slate-400 hover:text-white">
-                    <i data-lucide="menu" class="w-6 h-6" id="menuIcon"></i>
+                    <i class="fa-solid fa-bars w-6 h-6" id="menuIconFA"></i>
                 </button>
             </div>
 
@@ -552,7 +602,7 @@
                 <div class="flex justify-center gap-4 fade-up delay-200">
                     <a href="#projects" class="btn-primary px-8 py-3 rounded-full font-medium text-white flex items-center gap-2">
                         <span data-translate="exploreProjects">Explore Projects</span>
-                        <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                        <i class="fa-solid fa-arrow-down" style="font-size:14px"></i>
                     </a>
                     <a href="#contact" class="px-8 py-3 rounded-full font-medium border border-white/10 hover:bg-white/5 transition text-slate-300" style="font-family:'DM Sans',sans-serif" data-translate="getInTouch">
                         Get in Touch
@@ -572,9 +622,10 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+                <!-- SwiftService -->
                 <div class="glass-card rounded-2xl p-6 glow group fade-up project-card" onclick="openSwiftServiceModal()">
                     <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i data-lucide="settings" class="w-7 h-7 text-white"></i>
+                        <i class="fa-solid fa-gear fa-xl text-white"></i>
                     </div>
                     <div class="flex items-center gap-2 mb-3">
                         <h3 class="text-xl font-bold" style="font-family:'Syne',sans-serif">SwiftService</h3>
@@ -589,14 +640,15 @@
                         <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagUtils">Utilities</span>
                     </div>
                     <div class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 border border-white/10 text-sm font-medium text-slate-300 pointer-events-none">
-                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                        <i class="fa-solid fa-expand" style="font-size:14px"></i>
                         <span data-translate="viewDetails">View Details</span>
                     </div>
                 </div>
 
+                <!-- Exolute -->
                 <div class="glass-card rounded-2xl p-6 glow group fade-up delay-100">
                     <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i data-lucide="arrow-left-right" class="w-7 h-7 text-white"></i>
+                        <i class="fa-solid fa-arrows-left-right fa-xl text-white"></i>
                     </div>
                     <div class="flex items-center gap-2 mb-3">
                         <h3 class="text-xl font-bold" style="font-family:'Syne',sans-serif">Exolute Converter</h3>
@@ -611,14 +663,15 @@
                         <span class="tag text-xs px-3 py-1 rounded-full" data-translate="tagOffline">Offline</span>
                     </div>
                     <a href="https://play.google.com/store/apps/details?id=com.saieesoft.exolute" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
-                        <i data-lucide="play" class="w-4 h-4"></i>
+                        <i class="fa-brands fa-google-play" style="font-size:14px"></i>
                         <span data-translate="viewOnStore">View on Play Store</span>
                     </a>
                 </div>
 
+                <!-- AskAnonymousBot -->
                 <div class="glass-card rounded-2xl p-6 glow group fade-up delay-200">
                     <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                        <i data-lucide="message-circle" class="w-7 h-7 text-white"></i>
+                        <i class="fa-solid fa-comment-dots fa-xl text-white"></i>
                     </div>
                     <div class="flex items-center gap-2 mb-3">
                         <h3 class="text-xl font-bold" style="font-family:'Syne',sans-serif">@AskAnonymousBot</h3>
@@ -632,7 +685,7 @@
                         <span class="tag text-xs px-3 py-1 rounded-full">Telegram</span>
                     </div>
                     <a href="https://t.me/AskAnonymousBot" target="_blank" class="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 transition text-sm font-medium">
-                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        <i class="fa-brands fa-telegram" style="font-size:14px"></i>
                         <span data-translate="openInTelegram">Open in Telegram</span>
                     </a>
                 </div>
@@ -653,19 +706,19 @@
                             <div class="space-y-4">
                                 <a href="mailto:saieesoft@duck.com" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
                                     <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
-                                        <i data-lucide="mail" class="w-5 h-5"></i>
+                                        <i class="fa-solid fa-envelope" style="font-size:16px"></i>
                                     </div>
                                     <span class="text-sm">saieesoft@duck.com</span>
                                 </a>
                                 <a href="https://github.com/saieesoft" target="_blank" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
                                     <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
-                                        <i data-lucide="github" class="w-5 h-5"></i>
+                                        <i class="fa-brands fa-github" style="font-size:18px"></i>
                                     </div>
                                     <span class="text-sm">github.com/saieesoft</span>
                                 </a>
                                 <a href="https://play.google.com/store/apps/dev?id=6446780682856756622" target="_blank" class="flex items-center gap-3 text-slate-400 hover:text-white transition group">
                                     <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center group-hover:bg-indigo-500/20 transition">
-                                        <i data-lucide="smartphone" class="w-5 h-5"></i>
+                                        <i class="fa-solid fa-mobile-screen" style="font-size:16px"></i>
                                     </div>
                                     <span class="text-sm" data-translate="playStore">Play Store Developer</span>
                                 </a>
@@ -684,7 +737,7 @@
                             </div>
                             <button type="submit" class="btn-primary w-full py-3 rounded-xl font-medium text-white flex items-center justify-center gap-2">
                                 <span data-translate="sendMessage">Send Message</span>
-                                <i data-lucide="send" class="w-4 h-4"></i>
+                                <i class="fa-solid fa-paper-plane" style="font-size:14px"></i>
                             </button>
                         </form>
                     </div>
@@ -699,11 +752,12 @@
         </div>
     </footer>
 
+    <!-- SwiftService Modal -->
     <div class="modal-overlay" id="swiftServiceModal">
         <div class="modal-backdrop" onclick="closeSwiftServiceModal()"></div>
         <div class="modal-content">
             <button class="modal-close" onclick="closeSwiftServiceModal()">
-                <i data-lucide="x" class="w-4 h-4"></i>
+                <i class="fa-solid fa-xmark" style="font-size:14px"></i>
             </button>
 
             <div class="p-6 md:p-8">
@@ -711,34 +765,22 @@
                     <div class="flex flex-col">
                         <div class="slider-container" id="swiftSlider">
                             <div class="slide active" data-index="0">
-                                <div class="slide-placeholder">
-                                    <i data-lucide="monitor" style="width:48px;height:48px;opacity:0.3"></i>
-                                    <img src="screenshot1.png">
-                                </div>
+                                <img src="screenshot1.png" alt="Screenshot 1" onclick="openLightbox(this.src)">
                             </div>
                             <div class="slide" data-index="1">
-                                <div class="slide-placeholder">
-                                    <i data-lucide="cpu" style="width:48px;height:48px;opacity:0.3"></i>
-                                    <img src="screenshot2.png">
-                                </div>
+                                <img src="screenshot2.png" alt="Screenshot 2" onclick="openLightbox(this.src)">
                             </div>
                             <div class="slide" data-index="2">
-                                <div class="slide-placeholder">
-                                    <i data-lucide="hard-drive" style="width:48px;height:48px;opacity:0.3"></i>
-                                    <img src="screenshot3.png">
-                                </div>
+                                <img src="screenshot3.png" alt="Screenshot 3" onclick="openLightbox(this.src)">
                             </div>
                             <div class="slide" data-index="3">
-                                <div class="slide-placeholder">
-                                    <i data-lucide="shield" style="width:48px;height:48px;opacity:0.3"></i>
-                                    <img src="screenshot4.png">
-                                </div>
+                                <img src="screenshot4.png" alt="Screenshot 4" onclick="openLightbox(this.src)">
                             </div>
                             <button class="slider-arrow left" onclick="slideSwift(-1)">
-                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                                <i class="fa-solid fa-chevron-left" style="font-size:13px"></i>
                             </button>
                             <button class="slider-arrow right" onclick="slideSwift(1)">
-                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                                <i class="fa-solid fa-chevron-right" style="font-size:13px"></i>
                             </button>
                         </div>
                         <div class="slider-nav" id="sliderDots">
@@ -753,7 +795,7 @@
                         <div>
                             <div class="flex items-center gap-3 mb-3">
                                 <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                                    <i data-lucide="settings" class="w-6 h-6 text-white"></i>
+                                    <i class="fa-solid fa-gear fa-lg text-white"></i>
                                 </div>
                                 <div>
                                     <h2 class="text-2xl font-bold" style="font-family:'Syne',sans-serif;line-height:1.1">SwiftService <span class="gradient-text">Tool</span></h2>
@@ -800,11 +842,11 @@
 
                         <div class="flex flex-col gap-3 mt-auto pt-2">
                             <a href="SwiftService_Setup.exe" download class="btn-download flex items-center justify-center gap-2.5 w-full py-3.5 rounded-xl text-white text-sm">
-                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <i class="fa-solid fa-download" style="font-size:14px"></i>
                                 <span data-translate="downloadForWin">Download for Windows</span>
                             </a>
                             <a href="https://www.paypal.com/paypalme/YaroslavStepura" target="_blank" class="btn-support flex items-center justify-center gap-2.5 w-full py-3 rounded-xl text-sm">
-                                <i data-lucide="heart" class="w-4 h-4" style="color:#fbbf24"></i>
+                                <i class="fa-solid fa-heart" style="color:#fbbf24;font-size:14px"></i>
                                 <span data-translate="supportDev">Support the Developer</span>
                             </a>
                         </div>
@@ -812,6 +854,14 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox" onclick="closeLightbox()">
+        <button class="lightbox-close" onclick="closeLightbox()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        <img id="lightboxImg" src="" alt="Preview">
     </div>
 
     <script>
@@ -834,14 +884,9 @@
                 swiftserviceModalDesc: "A comprehensive Windows optimization suite built for performance-focused users. Clean, repair, and tune your system with precision tools — all in one lightweight app.",
                 exoluteDesc: "Real-time currency conversion with historical analytics, offline mode support, and intuitive interface design.",
                 askanonymousDesc: "Telegram bot for anonymous messaging. End-to-end privacy, no data storage, and seamless group integration.",
-                tagSystem: "System",
-                tagWindows: "Windows",
-                tagUtils: "Utilities",
-                tagFinance: "Finance",
-                tagAndroid: "Android",
-                tagOffline: "Offline",
-                tagSocial: "Social",
-                tagPrivacy: "Privacy",
+                tagSystem: "System", tagWindows: "Windows", tagUtils: "Utilities",
+                tagFinance: "Finance", tagAndroid: "Android", tagOffline: "Offline",
+                tagSocial: "Social", tagPrivacy: "Privacy",
                 viewDetails: "View Details",
                 downloadForWin: "Download for Windows",
                 viewOnStore: "View on Play Store",
@@ -857,25 +902,15 @@
                 feature4: "Gaming & performance tweaks",
                 feature5: "Privacy & security controls",
                 feature6: "EN / RU localization",
-                screenshotLabel: "Screenshot 1",
-                screenshotLabel2: "Screenshot 2",
-                screenshotLabel3: "Screenshot 3",
-                screenshotLabel4: "Screenshot 4",
-                replaceScreenshots: "Replace placeholder images with real screenshots",
                 supportDev: "Support the Developer",
-                placeholderName: "Name",
-                placeholderEmail: "Email",
-                placeholderMessage: "Message"
+                placeholderName: "Name", placeholderEmail: "Email", placeholderMessage: "Message"
             },
             ru: {
                 langLabel: "RU",
-                projects: "Проекты",
-                contact: "Контакт",
-                heroTitle: "Создаем",
-                heroTitleAccent: "Цифровые Инструменты",
+                projects: "Проекты", contact: "Контакт",
+                heroTitle: "Создаем", heroTitleAccent: "Цифровые Инструменты",
                 heroSubtitle: "Минималистичные утилиты для современных задач. Чистые, эффективные и тщательно продуманные.",
-                exploreProjects: "Смотреть проекты",
-                getInTouch: "Связаться",
+                exploreProjects: "Смотреть проекты", getInTouch: "Связаться",
                 projectsTitle: "Избранные",
                 projectsSubtitle: "Подборка утилит, созданных с точностью и вниманием к деталям.",
                 popularBadge: "ПОПУЛЯРНО",
@@ -883,14 +918,9 @@
                 swiftserviceModalDesc: "Комплексный набор оптимизации Windows для требовательных пользователей. Очищайте, восстанавливайте и настраивайте систему точными инструментами — всё в одном лёгком приложении.",
                 exoluteDesc: "Конвертация валют в реальном времени с исторической аналитикой, поддержкой офлайн-режима и интуитивным дизайном.",
                 askanonymousDesc: "Telegram-бот для анонимных сообщений. Приватность без компромиссов, без хранения данных и бесшовная интеграция в группы.",
-                tagSystem: "Система",
-                tagWindows: "Windows",
-                tagUtils: "Утилиты",
-                tagFinance: "Финансы",
-                tagAndroid: "Android",
-                tagOffline: "Офлайн",
-                tagSocial: "Социальное",
-                tagPrivacy: "Приватность",
+                tagSystem: "Система", tagWindows: "Windows", tagUtils: "Утилиты",
+                tagFinance: "Финансы", tagAndroid: "Android", tagOffline: "Офлайн",
+                tagSocial: "Социальное", tagPrivacy: "Приватность",
                 viewDetails: "Подробнее",
                 downloadForWin: "Скачать для Windows",
                 viewOnStore: "Смотреть в Play Store",
@@ -906,40 +936,25 @@
                 feature4: "Оптимизация для игр и производительности",
                 feature5: "Управление конфиденциальностью и безопасностью",
                 feature6: "Локализация EN / RU",
-                screenshotLabel: "Скриншот 1",
-                screenshotLabel2: "Скриншот 2",
-                screenshotLabel3: "Скриншот 3",
-                screenshotLabel4: "Скриншот 4",
-                replaceScreenshots: "Замените заглушки реальными скриншотами",
                 supportDev: "Поддержать разработчика",
-                placeholderName: "Имя",
-                placeholderEmail: "Email",
-                placeholderMessage: "Сообщение"
+                placeholderName: "Имя", placeholderEmail: "Email", placeholderMessage: "Сообщение"
             },
             ua: {
                 langLabel: "UA",
-                projects: "Проєкти",
-                contact: "Контакт",
-                heroTitle: "Створюємо",
-                heroTitleAccent: "Цифрові Інструменти",
+                projects: "Проєкти", contact: "Контакт",
+                heroTitle: "Створюємо", heroTitleAccent: "Цифрові Інструменти",
                 heroSubtitle: "Мінімалістичні утиліти для сучасних задач. Чисті, ефективні та ретельно продумані.",
-                exploreProjects: "Дивитись проєкти",
-                getInTouch: "Зв'язатись",
+                exploreProjects: "Дивитись проєкти", getInTouch: "Зв'язатись",
                 projectsTitle: "Вибрані",
                 projectsSubtitle: "Підбірка утиліт, створених з точністю та увагою до деталей.",
                 popularBadge: "ПОПУЛЯРНЕ",
-                swiftserviceDesc: "Просунутий набір для оптимізації Windows. Очищення системи, робота з реєстром та налаштування продуктивності в одній легкій утиліті.",
-                swiftserviceModalDesc: "Комплексний набір оптимізації Windows для вимогливих користувачів. Очищуйте, відновлюйте та налаштовуйте систему точними інструментами — все в одному легкому застосунку.",
+                swiftserviceDesc: "Просунутий набір для оптимізації Windows.",
+                swiftserviceModalDesc: "Комплексний набір оптимізації Windows для вимогливих користувачів.",
                 exoluteDesc: "Конвертація валют у реальному часі з історичною аналітикою, підтримкою офлайн-режиму та інтуїтивним дизайном.",
-                askanonymousDesc: "Telegram-бот для анонімних повідомлень. Приватність без компромісів, без зберігання даних та безшовна інтеграція в групи.",
-                tagSystem: "Система",
-                tagWindows: "Windows",
-                tagUtils: "Утиліти",
-                tagFinance: "Фінанси",
-                tagAndroid: "Android",
-                tagOffline: "Офлайн",
-                tagSocial: "Соціальне",
-                tagPrivacy: "Конфіденційність",
+                askanonymousDesc: "Telegram-бот для анонімних повідомлень. Приватність без компромісів.",
+                tagSystem: "Система", tagWindows: "Windows", tagUtils: "Утиліти",
+                tagFinance: "Фінанси", tagAndroid: "Android", tagOffline: "Офлайн",
+                tagSocial: "Соціальне", tagPrivacy: "Конфіденційність",
                 viewDetails: "Детальніше",
                 downloadForWin: "Завантажити для Windows",
                 viewOnStore: "Дивитись у Play Store",
@@ -955,40 +970,25 @@
                 feature4: "Оптимізація для ігор та продуктивності",
                 feature5: "Керування конфіденційністю та безпекою",
                 feature6: "Локалізація EN / RU",
-                screenshotLabel: "Скриншот 1",
-                screenshotLabel2: "Скриншот 2",
-                screenshotLabel3: "Скриншот 3",
-                screenshotLabel4: "Скриншот 4",
-                replaceScreenshots: "Замініть заглушки реальними скриншотами",
                 supportDev: "Підтримати розробника",
-                placeholderName: "Ім'я",
-                placeholderEmail: "Email",
-                placeholderMessage: "Повідомлення"
+                placeholderName: "Ім'я", placeholderEmail: "Email", placeholderMessage: "Повідомлення"
             },
             pl: {
                 langLabel: "PL",
-                projects: "Projekty",
-                contact: "Kontakt",
-                heroTitle: "Tworzymy",
-                heroTitleAccent: "Cyfrowe Narzędzia",
+                projects: "Projekty", contact: "Kontakt",
+                heroTitle: "Tworzymy", heroTitleAccent: "Cyfrowe Narzędzia",
                 heroSubtitle: "Minimalistyczne narzędzia dla nowoczesnych zadań. Czyste, wydajne i starannie dopracowane.",
-                exploreProjects: "Przeglądaj projekty",
-                getInTouch: "Kontakt",
+                exploreProjects: "Przeglądaj projekty", getInTouch: "Kontakt",
                 projectsTitle: "Wyróżnione",
                 projectsSubtitle: "Wyselekcjonowany zestaw narzędzi zbudowanych z precyzją i dbałością o szczegóły.",
                 popularBadge: "POPULARNE",
-                swiftserviceDesc: "Zaawansowany zestaw optymalizacji Windows. Czyszczenie systemu, konserwacja rejestru i dostrajanie wydajności w jednym lekkim narzędziu.",
-                swiftserviceModalDesc: "Kompleksowy pakiet optymalizacji Windows dla wymagających użytkowników. Czyść, naprawiaj i dostrajaj system precyzyjnymi narzędziami — wszystko w jednej lekkiej aplikacji.",
+                swiftserviceDesc: "Zaawansowany zestaw optymalizacji Windows.",
+                swiftserviceModalDesc: "Kompleksowy pakiet optymalizacji Windows dla wymagających użytkowników.",
                 exoluteDesc: "Konwersja walut w czasie rzeczywistym z analizą historyczną, obsługą trybu offline i intuicyjnym projektem.",
-                askanonymousDesc: "Bot Telegram do anonimowych wiadomości. Prywatność bez kompromisów, brak przechowywania danych i płynna integracja z grupami.",
-                tagSystem: "System",
-                tagWindows: "Windows",
-                tagUtils: "Narzędzia",
-                tagFinance: "Finanse",
-                tagAndroid: "Android",
-                tagOffline: "Offline",
-                tagSocial: "Społeczność",
-                tagPrivacy: "Prywatność",
+                askanonymousDesc: "Bot Telegram do anonimowych wiadomości. Prywatność bez kompromisów.",
+                tagSystem: "System", tagWindows: "Windows", tagUtils: "Narzędzia",
+                tagFinance: "Finanse", tagAndroid: "Android", tagOffline: "Offline",
+                tagSocial: "Społeczność", tagPrivacy: "Prywatność",
                 viewDetails: "Szczegóły",
                 downloadForWin: "Pobierz dla Windows",
                 viewOnStore: "Zobacz w Play Store",
@@ -1004,46 +1004,31 @@
                 feature4: "Optymalizacja gier i wydajności",
                 feature5: "Kontrola prywatności i bezpieczeństwa",
                 feature6: "Lokalizacja EN / RU",
-                screenshotLabel: "Zrzut ekranu 1",
-                screenshotLabel2: "Zrzut ekranu 2",
-                screenshotLabel3: "Zrzut ekranu 3",
-                screenshotLabel4: "Zrzut ekranu 4",
-                replaceScreenshots: "Zastąp obrazy zastępcze prawdziwymi zrzutami ekranu",
                 supportDev: "Wesprzyj dewelopera",
-                placeholderName: "Imię",
-                placeholderEmail: "E-mail",
-                placeholderMessage: "Wiadomość"
+                placeholderName: "Imię", placeholderEmail: "E-mail", placeholderMessage: "Wiadomość"
             },
             de: {
                 langLabel: "DE",
-                projects: "Projekte",
-                contact: "Kontakt",
-                heroTitle: "Wir erschaffen",
-                heroTitleAccent: "Digitale Tools",
+                projects: "Projekte", contact: "Kontakt",
+                heroTitle: "Wir erschaffen", heroTitleAccent: "Digitale Tools",
                 heroSubtitle: "Minimalistische Werkzeuge für moderne Arbeitsabläufe. Klar, effizient und sorgfältig gestaltet.",
-                exploreProjects: "Projekte erkunden",
-                getInTouch: "Kontakt aufnehmen",
+                exploreProjects: "Projekte erkunden", getInTouch: "Kontakt aufnehmen",
                 projectsTitle: "Ausgewählte",
                 projectsSubtitle: "Eine kuratierte Auswahl von Werkzeugen, die mit Präzision und Liebe zum Detail entwickelt wurden.",
                 popularBadge: "BELIEBT",
-                swiftserviceDesc: "Fortschrittliches Windows-Optimierungspaket. Systembereinigung, Registrierungspflege und Leistungsoptimierung in einem leichten Tool.",
-                swiftserviceModalDesc: "Ein umfassendes Windows-Optimierungspaket für leistungsorientierte Nutzer. Bereinige, repariere und optimiere dein System mit präzisen Werkzeugen — alles in einer leichten App.",
+                swiftserviceDesc: "Fortschrittliches Windows-Optimierungspaket.",
+                swiftserviceModalDesc: "Ein umfassendes Windows-Optimierungspaket für leistungsorientierte Nutzer.",
                 exoluteDesc: "Echtzeit-Währungsumrechnung mit historischer Analyse, Offline-Modus und intuitivem Design.",
-                askanonymousDesc: "Telegram-Bot für anonyme Nachrichten. Vollständige Privatsphäre, keine Datenspeicherung und nahtlose Gruppenintegration.",
-                tagSystem: "System",
-                tagWindows: "Windows",
-                tagUtils: "Tools",
-                tagFinance: "Finanzen",
-                tagAndroid: "Android",
-                tagOffline: "Offline",
-                tagSocial: "Sozial",
-                tagPrivacy: "Datenschutz",
+                askanonymousDesc: "Telegram-Bot für anonyme Nachrichten. Vollständige Privatsphäre, keine Datenspeicherung.",
+                tagSystem: "System", tagWindows: "Windows", tagUtils: "Tools",
+                tagFinance: "Finanzen", tagAndroid: "Android", tagOffline: "Offline",
+                tagSocial: "Sozial", tagPrivacy: "Datenschutz",
                 viewDetails: "Details ansehen",
                 downloadForWin: "Für Windows herunterladen",
                 viewOnStore: "Im Play Store ansehen",
                 openInTelegram: "In Telegram öffnen",
                 contactTitle: "Zusammenarbeiten",
-                contactSubtitle: "Haben Sie ein Projekt oder möchten Sie mögliche Kooperationen besprechen? Nehmen Sie direkt Kontakt auf.",
+                contactSubtitle: "Haben Sie ein Projekt oder möchten Sie mögliche Kooperationen besprechen?",
                 playStore: "Play Store Entwickler",
                 sendMessage: "Nachricht senden",
                 copyright: "© 2026 SaieeSoft. Alle Rechte vorbehalten.",
@@ -1053,15 +1038,8 @@
                 feature4: "Gaming- & Leistungs-Tweaks",
                 feature5: "Datenschutz- & Sicherheitseinstellungen",
                 feature6: "EN / RU Lokalisierung",
-                screenshotLabel: "Screenshot 1",
-                screenshotLabel2: "Screenshot 2",
-                screenshotLabel3: "Screenshot 3",
-                screenshotLabel4: "Screenshot 4",
-                replaceScreenshots: "Platzhalter durch echte Screenshots ersetzen",
                 supportDev: "Entwickler unterstützen",
-                placeholderName: "Name",
-                placeholderEmail: "E-Mail",
-                placeholderMessage: "Nachricht"
+                placeholderName: "Name", placeholderEmail: "E-Mail", placeholderMessage: "Nachricht"
             }
         };
 
@@ -1079,7 +1057,6 @@
         function setLanguage(lang) {
             currentLang = lang;
             document.documentElement.lang = lang;
-
             const t = translations[lang];
             if (!t) return;
 
@@ -1106,7 +1083,6 @@
             });
 
             updateVersionBadges();
-            lucide.createIcons();
             localStorage.setItem('saieesoft-lang', lang);
 
             const dropdown = document.getElementById('langDropdownMenu');
@@ -1135,27 +1111,44 @@
 
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
-            const icon = document.getElementById('menuIcon');
+            const icon = document.getElementById('menuIconFA');
             menu.classList.toggle('open');
-            icon.setAttribute('data-lucide', menu.classList.contains('open') ? 'x' : 'menu');
-            lucide.createIcons();
+            const isOpen = menu.classList.contains('open');
+            icon.className = isOpen ? 'fa-solid fa-xmark' : 'fa-solid fa-bars';
         }
 
         function openSwiftServiceModal() {
-            const modal = document.getElementById('swiftServiceModal');
-            modal.classList.add('open');
+            document.getElementById('swiftServiceModal').classList.add('open');
             document.body.style.overflow = 'hidden';
-            lucide.createIcons();
         }
 
         function closeSwiftServiceModal() {
-            const modal = document.getElementById('swiftServiceModal');
-            modal.classList.remove('open');
+            document.getElementById('swiftServiceModal').classList.remove('open');
             document.body.style.overflow = '';
         }
 
+        // Lightbox
+        function openLightbox(src) {
+            const lb = document.getElementById('lightbox');
+            const img = document.getElementById('lightboxImg');
+            img.src = src;
+            lb.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('open');
+            // restore scroll only if modal is also closed
+            if (!document.getElementById('swiftServiceModal').classList.contains('open')) {
+                document.body.style.overflow = '';
+            }
+        }
+
         document.addEventListener('keydown', e => {
-            if (e.key === 'Escape') closeSwiftServiceModal();
+            if (e.key === 'Escape') {
+                closeLightbox();
+                closeSwiftServiceModal();
+            }
         });
 
         function goToSlide(index) {
@@ -1164,15 +1157,12 @@
 
             slides[currentSlide].classList.remove('active');
             slides[currentSlide].classList.add('prev');
-            setTimeout(() => slides[currentSlide < totalSlides ? currentSlide : 0].classList.remove('prev'), 500);
+            const prevIdx = currentSlide;
+            setTimeout(() => slides[prevIdx].classList.remove('prev'), 500);
 
             currentSlide = (index + totalSlides) % totalSlides;
-
-            slides.forEach((s, i) => {
-                s.classList.remove('active', 'prev');
-            });
+            slides.forEach(s => s.classList.remove('active', 'prev'));
             slides[currentSlide].classList.add('active');
-
             dots.forEach((d, i) => d.classList.toggle('active', i === currentSlide));
         }
 
@@ -1183,8 +1173,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             const savedLang = localStorage.getItem('saieesoft-lang');
             setLanguage((savedLang && translations[savedLang]) ? savedLang : detectLanguage());
-
-            lucide.createIcons();
             updateVersionBadges();
 
             const observer = new IntersectionObserver(entries => {
@@ -1202,7 +1190,6 @@
                 if (target) {
                     target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     document.getElementById('mobileMenu').classList.remove('open');
-                    lucide.createIcons();
                 }
             });
         });
